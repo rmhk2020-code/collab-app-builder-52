@@ -14,10 +14,122 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      exercises: {
+        Row: {
+          benefits: string[] | null
+          calories_burned_per_hour: number | null
+          category: string
+          created_at: string
+          description: string | null
+          difficulty_level: string
+          duration_minutes: number
+          equipment: string[]
+          frequency_per_week: number
+          id: string
+          image_url: string | null
+          intensity_level: string
+          modifications: string[] | null
+          muscle_groups: string[]
+          name: string
+          precautions: string[] | null
+          steps: string[]
+          type: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          benefits?: string[] | null
+          calories_burned_per_hour?: number | null
+          category: string
+          created_at?: string
+          description?: string | null
+          difficulty_level: string
+          duration_minutes?: number
+          equipment?: string[]
+          frequency_per_week?: number
+          id?: string
+          image_url?: string | null
+          intensity_level: string
+          modifications?: string[] | null
+          muscle_groups?: string[]
+          name: string
+          precautions?: string[] | null
+          steps?: string[]
+          type: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          benefits?: string[] | null
+          calories_burned_per_hour?: number | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          difficulty_level?: string
+          duration_minutes?: number
+          equipment?: string[]
+          frequency_per_week?: number
+          id?: string
+          image_url?: string | null
+          intensity_level?: string
+          modifications?: string[] | null
+          muscle_groups?: string[]
+          name?: string
+          precautions?: string[] | null
+          steps?: string[]
+          type?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      exercises_by_fitt: {
+        Row: {
+          calories_burned_per_hour: number | null
+          difficulty_level: string | null
+          equipment: string[] | null
+          fitt_type: string | null
+          frequency: number | null
+          id: string | null
+          intensity: string | null
+          muscle_groups: string[] | null
+          name: string | null
+          steps: string[] | null
+          time: number | null
+          type: string | null
+        }
+        Insert: {
+          calories_burned_per_hour?: number | null
+          difficulty_level?: string | null
+          equipment?: string[] | null
+          fitt_type?: string | null
+          frequency?: number | null
+          id?: string | null
+          intensity?: string | null
+          muscle_groups?: string[] | null
+          name?: string | null
+          steps?: string[] | null
+          time?: number | null
+          type?: string | null
+        }
+        Update: {
+          calories_burned_per_hour?: number | null
+          difficulty_level?: string | null
+          equipment?: string[] | null
+          fitt_type?: string | null
+          frequency?: number | null
+          id?: string | null
+          intensity?: string | null
+          muscle_groups?: string[] | null
+          name?: string | null
+          steps?: string[] | null
+          time?: number | null
+          type?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
