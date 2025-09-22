@@ -85,51 +85,7 @@ export type Database = {
       }
     }
     Views: {
-      exercises_by_fitt: {
-        Row: {
-          calories_burned_per_hour: number | null
-          difficulty_level: string | null
-          equipment: string[] | null
-          fitt_type: string | null
-          frequency: number | null
-          id: string | null
-          intensity: string | null
-          muscle_groups: string[] | null
-          name: string | null
-          steps: string[] | null
-          time: number | null
-          type: string | null
-        }
-        Insert: {
-          calories_burned_per_hour?: number | null
-          difficulty_level?: string | null
-          equipment?: string[] | null
-          fitt_type?: string | null
-          frequency?: number | null
-          id?: string | null
-          intensity?: string | null
-          muscle_groups?: string[] | null
-          name?: string | null
-          steps?: string[] | null
-          time?: number | null
-          type?: string | null
-        }
-        Update: {
-          calories_burned_per_hour?: number | null
-          difficulty_level?: string | null
-          equipment?: string[] | null
-          fitt_type?: string | null
-          frequency?: number | null
-          id?: string | null
-          intensity?: string | null
-          muscle_groups?: string[] | null
-          name?: string | null
-          steps?: string[] | null
-          time?: number | null
-          type?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       [_ in never]: never
