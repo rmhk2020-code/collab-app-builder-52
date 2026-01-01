@@ -1,0 +1,218 @@
+import { createContext, useContext, useState, ReactNode } from "react";
+
+export type UserProfile = {
+  name: string;
+  age: number;
+  height: number;
+  weight: number;
+  gender: "male" | "female" | "other" | "prefer_not_to_say";
+  fitnessLevel: "beginner" | "intermediate" | "advanced";
+  activityLevel: "sedentary" | "lightly_active" | "moderately_active" | "very_active" | "extremely_active";
+};
+
+export type FitnessPlanSettings = {
+  workoutDaysPerWeek: number;
+  workoutDuration: number;
+  preferredWorkoutType: string[];
+  workoutLocation: "home" | "gym" | "outdoor" | "any";
+  availableEquipment: string[];
+  autoGeneratePlan: boolean;
+};
+
+export type ExerciseSettings = {
+  showRecommended: boolean;
+  difficultyFilter: string[];
+  restTimeSeconds: number;
+  showAnimations: boolean;
+  enableProgression: boolean;
+};
+
+export type DietSettings = {
+  dailyCalorieTarget: number;
+  proteinTarget: number;
+  carbsTarget: number;
+  fatsTarget: number;
+  dietaryPreferences: string[];
+  allergies: string[];
+  mealFrequency: number;
+  waterIntakeGoal: number;
+  showRecommendedFoods: boolean;
+};
+
+export type TrackingSettings = {
+  enableProgressBars: boolean;
+  trackWeight: boolean;
+  trackMeasurements: boolean;
+  trackCaloriesBurned: boolean;
+  showReports: boolean;
+};
+
+export type NotificationSettings = {
+  workoutReminders: boolean;
+  mealReminders: boolean;
+  waterReminders: boolean;
+  restDayReminders: boolean;
+  motivationNotifications: boolean;
+  customReminderTimes: string[];
+};
+
+export type AppPreferences = {
+  theme: "light" | "dark" | "system";
+  accentColor: string;
+  language: string;
+  fontSize: "small" | "medium" | "large";
+  soundEnabled: boolean;
+  vibrationEnabled: boolean;
+  units: {
+    weight: "lbs" | "kg";
+    distance: "miles" | "km";
+    height: "ft" | "cm";
+  };
+};
+
+export type PrivacySettings = {
+  dataVisibility: "private" | "public";
+  appLock: boolean;
+  cloudBackup: boolean;
+};
+
+interface SettingsContextType {
+  userProfile: UserProfile;
+  setUserProfile: (profile: UserProfile) => void;
+  fitnessPlanSettings: FitnessPlanSettings;
+  setFitnessPlanSettings: (settings: FitnessPlanSettings) => void;
+  exerciseSettings: ExerciseSettings;
+  setExerciseSettings: (settings: ExerciseSettings) => void;
+  dietSettings: DietSettings;
+  setDietSettings: (settings: DietSettings) => void;
+  trackingSettings: TrackingSettings;
+  setTrackingSettings: (settings: TrackingSettings) => void;
+  notificationSettings: NotificationSettings;
+  setNotificationSettings: (settings: NotificationSettings) => void;
+  appPreferences: AppPreferences;
+  setAppPreferences: (preferences: AppPreferences) => void;
+  privacySettings: PrivacySettings;
+  setPrivacySettings: (settings: PrivacySettings) => void;
+}
+
+const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
+
+const defaultUserProfile: UserProfile = {
+  name: "",
+  age: 25,
+  height: 170,
+  weight: 70,
+  gender: "prefer_not_to_say",
+  fitnessLevel: "beginner",
+  activityLevel: "moderately_active",
+};
+
+const defaultFitnessPlanSettings: FitnessPlanSettings = {
+  workoutDaysPerWeek: 4,
+  workoutDuration: 45,
+  preferredWorkoutType: ["strength", "cardio"],
+  workoutLocation: "any",
+  availableEquipment: ["dumbbells", "barbell"],
+  autoGeneratePlan: true,
+};
+
+const defaultExerciseSettings: ExerciseSettings = {
+  showRecommended: true,
+  difficultyFilter: ["beginner", "intermediate", "advanced"],
+  restTimeSeconds: 60,
+  showAnimations: true,
+  enableProgression: true,
+};
+
+const defaultDietSettings: DietSettings = {
+  dailyCalorieTarget: 2000,
+  proteinTarget: 150,
+  carbsTarget: 200,
+  fatsTarget: 65,
+  dietaryPreferences: [],
+  allergies: [],
+  mealFrequency: 3,
+  waterIntakeGoal: 8,
+  showRecommendedFoods: true,
+};
+
+const defaultTrackingSettings: TrackingSettings = {
+  enableProgressBars: true,
+  trackWeight: true,
+  trackMeasurements: true,
+  trackCaloriesBurned: true,
+  showReports: true,
+};
+
+const defaultNotificationSettings: NotificationSettings = {
+  workoutReminders: true,
+  mealReminders: true,
+  waterReminders: false,
+  restDayReminders: false,
+  motivationNotifications: true,
+  customReminderTimes: ["08:00", "12:00", "18:00"],
+};
+
+const defaultAppPreferences: AppPreferences = {
+  theme: "system",
+  accentColor: "#2563EB",
+  language: "en",
+  fontSize: "medium",
+  soundEnabled: true,
+  vibrationEnabled: true,
+  units: {
+    weight: "kg",
+    distance: "km",
+    height: "cm",
+  },
+};
+
+const defaultPrivacySettings: PrivacySettings = {
+  dataVisibility: "private",
+  appLock: false,
+  cloudBackup: true,
+};
+
+export const SettingsProvider = ({ children }: { children: ReactNode }) => {
+  const [userProfile, setUserProfile] = useState<UserProfile>(defaultUserProfile);
+  const [fitnessPlanSettings, setFitnessPlanSettings] = useState<FitnessPlanSettings>(defaultFitnessPlanSettings);
+  const [exerciseSettings, setExerciseSettings] = useState<ExerciseSettings>(defaultExerciseSettings);
+  const [dietSettings, setDietSettings] = useState<DietSettings>(defaultDietSettings);
+  const [trackingSettings, setTrackingSettings] = useState<TrackingSettings>(defaultTrackingSettings);
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(defaultNotificationSettings);
+  const [appPreferences, setAppPreferences] = useState<AppPreferences>(defaultAppPreferences);
+  const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(defaultPrivacySettings);
+
+  return (
+    <SettingsContext.Provider
+      value={{
+        userProfile,
+        setUserProfile,
+        fitnessPlanSettings,
+        setFitnessPlanSettings,
+        exerciseSettings,
+        setExerciseSettings,
+        dietSettings,
+        setDietSettings,
+        trackingSettings,
+        setTrackingSettings,
+        notificationSettings,
+        setNotificationSettings,
+        appPreferences,
+        setAppPreferences,
+        privacySettings,
+        setPrivacySettings,
+      }}
+    >
+      {children}
+    </SettingsContext.Provider>
+  );
+};
+
+export const useSettings = () => {
+  const context = useContext(SettingsContext);
+  if (context === undefined) {
+    throw new Error("useSettings must be used within a SettingsProvider");
+  }
+  return context;
+};

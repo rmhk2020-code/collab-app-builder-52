@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dumbbell, Apple, Target, Zap, TrendingUp, Calendar, Clock, Heart } from "lucide-react";
+import { Dumbbell, Apple, Target, Zap, TrendingUp, Calendar, Clock, Heart, Settings, Activity } from "lucide-react";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 
 const Home = () => {
@@ -143,40 +143,22 @@ const Home = () => {
             for athletes of all levels
           </p>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {/* Exercise Library Card */}
             <Card className="group hover:shadow-lg transition-all duration-300 border-border bg-card overflow-hidden">
               <CardHeader className="pb-4">
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <Dumbbell className="h-8 w-8 text-primary" />
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
+                  <Dumbbell className="h-7 w-7 text-primary" />
                 </div>
-                <CardTitle className="text-2xl text-card-foreground">Exercise Library</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  300+ exercises with detailed FITT principles
+                <CardTitle className="text-xl text-card-foreground">Exercises</CardTitle>
+                <CardDescription className="text-muted-foreground text-sm">
+                  400+ exercises with FITT principles
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <ul className="space-y-2 text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Strength, Cardio, Flexibility & more
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Beginner to Professional levels
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Step-by-step instructions
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Equipment & modification options
-                  </li>
-                </ul>
+              <CardContent>
                 <Link to="/exercises">
-                  <Button className="w-full mt-4" size="lg">
-                    Browse Exercises
+                  <Button className="w-full min-h-[44px]" size="lg">
+                    Browse
                   </Button>
                 </Link>
               </CardContent>
@@ -185,36 +167,58 @@ const Home = () => {
             {/* Diet/Food Card */}
             <Card className="group hover:shadow-lg transition-all duration-300 border-border bg-card overflow-hidden">
               <CardHeader className="pb-4">
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <Apple className="h-8 w-8 text-primary" />
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-3 group-hover:bg-emerald-500/20 transition-colors">
+                  <Apple className="h-7 w-7 text-emerald-500" />
                 </div>
-                <CardTitle className="text-2xl text-card-foreground">Diet & Nutrition</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  Fuel your performance with smart nutrition
+                <CardTitle className="text-xl text-card-foreground">Nutrition</CardTitle>
+                <CardDescription className="text-muted-foreground text-sm">
+                  AI-powered food analysis
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <ul className="space-y-2 text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    AI-powered food analysis
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Macro & calorie tracking
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Goal-based meal suggestions
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Dietary restriction support
-                  </li>
-                </ul>
+              <CardContent>
                 <Link to="/nutrition">
-                  <Button className="w-full mt-4" size="lg" variant="outline">
-                    Explore Nutrition
+                  <Button className="w-full min-h-[44px]" size="lg" variant="outline">
+                    Explore
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Health Vitals Card */}
+            <Card className="group hover:shadow-lg transition-all duration-300 border-border bg-card overflow-hidden">
+              <CardHeader className="pb-4">
+                <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center mb-3 group-hover:bg-red-500/20 transition-colors">
+                  <Activity className="h-7 w-7 text-red-500" />
+                </div>
+                <CardTitle className="text-xl text-card-foreground">Health</CardTitle>
+                <CardDescription className="text-muted-foreground text-sm">
+                  Track weight, BP, vitals
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link to="/health">
+                  <Button className="w-full min-h-[44px]" size="lg" variant="outline">
+                    Track
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Settings Card */}
+            <Card className="group hover:shadow-lg transition-all duration-300 border-border bg-card overflow-hidden">
+              <CardHeader className="pb-4">
+                <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-3 group-hover:bg-muted/80 transition-colors">
+                  <Settings className="h-7 w-7 text-muted-foreground" />
+                </div>
+                <CardTitle className="text-xl text-card-foreground">Settings</CardTitle>
+                <CardDescription className="text-muted-foreground text-sm">
+                  Customize your experience
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link to="/settings">
+                  <Button className="w-full min-h-[44px]" size="lg" variant="outline">
+                    Configure
                   </Button>
                 </Link>
               </CardContent>
