@@ -274,24 +274,25 @@ const Settings = () => {
           description: "You must be logged in to delete your account.",
           variant: "destructive",
         });
+        setIsDeleting(false);
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke("delete-account", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
+      const response = await fetch(
+        `https://kkvudqvxcjchzehrptvy.supabase.co/functions/v1/delete-account`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        }
+      );
 
-      if (error) throw error;
+      const data = await response.json();
 
-      if (data?.error) {
-        toast({
-          title: "Error",
-          description: data.error,
-          variant: "destructive",
-        });
-        return;
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Failed to delete account');
       }
 
       toast({
