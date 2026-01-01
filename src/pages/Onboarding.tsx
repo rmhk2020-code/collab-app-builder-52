@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WelcomeScreen from "@/components/onboarding/WelcomeScreen";
 import ExplanationScreen from "@/components/onboarding/ExplanationScreen";
@@ -22,19 +22,25 @@ const questions = [
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { setFitnessPlan: setGlobalPlan, setAnswers: setGlobalAnswers, setHasCompletedOnboarding } = useFitnessPlan();
-  const [currentStep, setCurrentStep] = useState<"welcome" | "explanation" | "questions" | "loading" | "plan" | "feedback">("welcome");
+  const { setFitnessPlan: setGlobalPlan, setAnswers: setGlobalAnswers, setHasCompletedOnboarding, fitnessPlan: existingPlan } = useFitnessPlan();
+  const [currentStep, setCurrentStep] = useState<"loading" | "welcome" | "explanation" | "questions" | "generating" | "plan" | "feedback">("loading");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<OnboardingAnswers>({});
   const [fitnessPlan, setFitnessPlan] = useState<FitnessPlan | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
-    // If user came from Google OAuth, force them to set a password before continuing.
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const checkUserStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
-      if (!user) return;
+      
+      if (!user) {
+        // Guest user, show onboarding
+        setCurrentStep("welcome");
+        return;
+      }
 
+      // Check if OAuth user needs to set password
       const provider = user.app_metadata?.provider;
       const providers = user.app_metadata?.providers || [];
       const hasPassword = user.user_metadata?.has_password === true;
@@ -42,9 +48,33 @@ const Onboarding = () => {
 
       if (needsPassword) {
         navigate("/set-password");
+        return;
       }
-    });
-  }, [navigate]);
+
+      // Check if user has already completed onboarding (check database)
+      const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("fitness_plan, onboarding_answers")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (profile?.fitness_plan) {
+        // User has completed onboarding before, redirect to home
+        setGlobalPlan(profile.fitness_plan as unknown as FitnessPlan);
+        if (profile.onboarding_answers) {
+          setGlobalAnswers(profile.onboarding_answers as unknown as OnboardingAnswers);
+        }
+        setHasCompletedOnboarding(true);
+        navigate("/home");
+        return;
+      }
+
+      // New user, show onboarding
+      setCurrentStep("welcome");
+    };
+
+    checkUserStatus();
+  }, [navigate, setGlobalPlan, setGlobalAnswers, setHasCompletedOnboarding]);
 
   const handleWelcomeContinue = () => {
     setCurrentStep("explanation");
@@ -76,7 +106,7 @@ const Onboarding = () => {
   };
 
   const generateFitnessPlan = async (finalAnswers: OnboardingAnswers, feedback?: string) => {
-    setCurrentStep("loading");
+    setCurrentStep("generating");
     setIsGenerating(true);
 
     const fallbackPlan: FitnessPlan = {
@@ -184,6 +214,12 @@ const Onboarding = () => {
         />
       )}
       {currentStep === "loading" && (
+        <div className="flex flex-col items-center justify-center min-h-screen px-6 animate-fade-in">
+          <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      )}
+      {currentStep === "generating" && (
         <div className="flex flex-col items-center justify-center min-h-screen px-6 animate-fade-in">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-6" />
           <p className="text-xl text-foreground text-center">
