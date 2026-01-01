@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import WelcomeScreen from "@/components/onboarding/WelcomeScreen";
 import ExplanationScreen from "@/components/onboarding/ExplanationScreen";
 import QuestionScreen from "@/components/onboarding/QuestionScreen";
@@ -26,6 +28,23 @@ const Onboarding = () => {
   const [answers, setAnswers] = useState<OnboardingAnswers>({});
   const [fitnessPlan, setFitnessPlan] = useState<FitnessPlan | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    // If user came from Google OAuth, force them to set a password before continuing.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const user = session?.user;
+      if (!user) return;
+
+      const provider = user.app_metadata?.provider;
+      const providers = user.app_metadata?.providers || [];
+      const hasPassword = user.user_metadata?.has_password === true;
+      const needsPassword = provider !== "email" && !providers.includes("email") && !hasPassword;
+
+      if (needsPassword) {
+        navigate("/set-password");
+      }
+    });
+  }, [navigate]);
 
   const handleWelcomeContinue = () => {
     setCurrentStep("explanation");
@@ -123,8 +142,31 @@ const Onboarding = () => {
     navigate("/home");
   };
 
+  const handleBackToSignIn = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // ignore
+    }
+    navigate("/auth");
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      <header className="absolute top-0 left-0 right-0 z-10 p-4">
+        <div className="container mx-auto max-w-6xl">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBackToSignIn}
+            className="gap-2 min-h-[44px]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Sign In
+          </Button>
+        </div>
+      </header>
+
       {currentStep === "welcome" && (
         <WelcomeScreen onContinue={handleWelcomeContinue} />
       )}

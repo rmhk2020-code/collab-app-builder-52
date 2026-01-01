@@ -29,12 +29,12 @@ const Auth = () => {
   };
 
   const checkIfNeedsPassword = (user: any): boolean => {
-    // Check if user signed up via OAuth and might not have a password
+    // OAuth users should set an app password once, so they can also sign in with email.
     const provider = user.app_metadata?.provider;
     const providers = user.app_metadata?.providers || [];
-    
-    // If signed in via OAuth (not email), they might need to set a password
-    return provider !== "email" && !providers.includes("email");
+    const hasPassword = user.user_metadata?.has_password === true;
+
+    return provider !== "email" && !providers.includes("email") && !hasPassword;
   };
 
   useEffect(() => {
@@ -42,12 +42,12 @@ const Auth = () => {
       if (session?.user) {
         setIsGuest(false);
         setTimeout(() => {
-          // Check if OAuth user needs to set password
-          if (event === "SIGNED_IN" && checkIfNeedsPassword(session.user)) {
+          // Always force OAuth users to set a password (not only on SIGNED_IN)
+          if (checkIfNeedsPassword(session.user)) {
             navigate("/set-password");
             return;
           }
-          
+
           checkUserOnboardingStatus(session.user.id).then((hasCompletedOnboardingInDB) => {
             if (hasCompletedOnboardingInDB) {
               navigate("/home");
@@ -56,12 +56,21 @@ const Auth = () => {
             }
           });
         }, 0);
+      } else if (event === "SIGNED_OUT") {
+        // Stay on auth page
       }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setIsGuest(false);
+
+        // Also handle OAuth users on initial session
+        if (checkIfNeedsPassword(session.user)) {
+          navigate("/set-password");
+          return;
+        }
+
         checkUserOnboardingStatus(session.user.id).then((hasCompletedOnboardingInDB) => {
           if (hasCompletedOnboardingInDB) {
             navigate("/home");
