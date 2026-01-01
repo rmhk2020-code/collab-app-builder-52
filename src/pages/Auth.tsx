@@ -212,7 +212,7 @@ const Auth = () => {
           <h1 className="text-4xl xl:text-5xl font-bold leading-tight mb-6">
             Track & Plan{" "}
             <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-              Workouts
+              a Lifestyle
             </span>
           </h1>
           

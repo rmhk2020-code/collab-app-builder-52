@@ -166,7 +166,7 @@ const defaultNotificationSettings: NotificationSettings = {
 };
 
 const defaultAppPreferences: AppPreferences = {
-  theme: "light",
+  theme: "dark",
   accentColor: "#2563EB",
   language: "en",
   fontSize: "medium",
@@ -190,7 +190,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const getInitialTheme = (): "light" | "dark" => {
     const saved = localStorage.getItem("theme");
     if (saved === "dark" || saved === "light") return saved;
-    return "light";
+    return "dark";
   };
 
   const getInitialAppPreferences = (): AppPreferences => {
