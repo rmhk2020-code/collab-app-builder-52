@@ -72,7 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email with code
     const emailResponse = await resend.emails.send({
-      from: "Health Kinetics <onboarding@resend.dev>",
+      from: "Health Kinetics <noreply@healthkinetics.app>",
       to: [email],
       subject: "Password Reset Code - Health Kinetics",
       html: `
