@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { useHealthVitals } from "@/contexts/HealthVitalsContext";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import { toast } from "@/hooks/use-toast";
+import AppHeader from "@/components/layout/AppHeader";
 import {
   LineChart,
   Line,
@@ -25,7 +26,6 @@ import {
   Bar,
 } from "recharts";
 import {
-  ArrowLeft,
   Scale,
   Heart,
   Activity,
@@ -248,22 +248,7 @@ const Health = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
-        <div className="container mx-auto max-w-6xl px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Link to="/home">
-              <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Health Vitals</h1>
-              <p className="text-sm text-muted-foreground">Track your health metrics</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AppHeader title="Health Vitals" />
 
       {/* Guest Banner */}
       {isGuest && (
