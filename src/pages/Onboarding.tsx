@@ -60,12 +60,35 @@ const Onboarding = () => {
     setCurrentStep("loading");
     setIsGenerating(true);
 
+    const fallbackPlan: FitnessPlan = {
+      goal: finalAnswers[0] || "General fitness improvement",
+      weeklyPlan: "Start with 3 days per week, gradually increasing as you build consistency.",
+      workoutStyle: "A mix of cardio and strength training tailored to your preferences.",
+      stayingConsistent: "Set reminders, start small, and celebrate every workout completed.",
+      duration: "30-45 minutes per session",
+      progression: "Week 1-2: Foundation building. Week 3-4: Gradual intensity increase.",
+    };
+
     try {
+      // Add timeout to prevent infinite loading
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
       const { data, error } = await supabase.functions.invoke("generate-fitness-plan", {
         body: { answers: finalAnswers, questions, feedback },
       });
 
-      if (error) throw error;
+      clearTimeout(timeoutId);
+
+      if (error) {
+        console.error("Edge function error:", error);
+        throw error;
+      }
+
+      if (!data || !data.plan) {
+        console.error("No plan in response:", data);
+        throw new Error("No plan returned");
+      }
 
       setFitnessPlan(data.plan);
       setGlobalPlan(data.plan);
@@ -73,15 +96,7 @@ const Onboarding = () => {
       setCurrentStep("plan");
     } catch (error) {
       console.error("Error generating fitness plan:", error);
-      // Fallback plan if AI fails
-      const fallbackPlan: FitnessPlan = {
-        goal: finalAnswers[0] || "General fitness improvement",
-        weeklyPlan: "Start with 3 days per week, gradually increasing as you build consistency.",
-        workoutStyle: "A mix of cardio and strength training tailored to your preferences.",
-        stayingConsistent: "Set reminders, start small, and celebrate every workout completed.",
-        duration: "30-45 minutes per session",
-        progression: "Week 1-2: Foundation building. Week 3-4: Gradual intensity increase.",
-      };
+      // Use fallback plan if AI fails
       setFitnessPlan(fallbackPlan);
       setGlobalPlan(fallbackPlan);
       setGlobalAnswers(finalAnswers);
