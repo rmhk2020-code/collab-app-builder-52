@@ -117,53 +117,61 @@ const Home = () => {
   const caloriesRemaining = Math.max(dailyCalorieGoal - caloriesEaten, 0);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-40 right-10 w-96 h-96 bg-secondary/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-20 left-1/4 w-64 h-64 bg-accent/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
+
       <AppHeader />
 
       {/* Main Content */}
-      <main className="container mx-auto max-w-6xl px-4 py-6">
+      <main className="container mx-auto max-w-6xl px-4 py-6 relative z-10">
         {activeSection === "fitness-goal" && (
           <section className="animate-fade-in">
             {/* Welcome Message */}
             <div className="mb-6">
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                Welcome! 👋
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground animate-fade-in">
+                Welcome! <span className="inline-block animate-bounce">👋</span>
               </h2>
-              <p className="text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 animate-fade-in" style={{ animationDelay: '0.1s' }}>
                 Let's crush your fitness goals today
               </p>
             </div>
 
             {/* How Are You Feeling Card */}
-            <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20 mb-6">
-              <CardContent className="py-5">
+            <Card className="bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 border-primary/20 mb-6 animate-fade-in shadow-lg hover:shadow-xl transition-all duration-500 backdrop-blur-sm" style={{ animationDelay: '0.2s' }}>
+              <CardContent className="py-6">
                 <div className="flex flex-col items-center text-center">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Heart className="h-5 w-5 text-primary" />
+                  <div className="flex items-center gap-2 mb-4">
+                    <Heart className="h-5 w-5 text-primary animate-pulse" />
                     <h3 className="font-medium text-foreground">How are you feeling today?</h3>
                   </div>
                   <div className="flex gap-3 flex-wrap justify-center">
                     {[
-                      { mood: "great", icon: Sparkles, label: "Great!", color: "text-emerald-500" },
-                      { mood: "good", icon: Smile, label: "Good", color: "text-blue-500" },
-                      { mood: "okay", icon: Meh, label: "Okay", color: "text-amber-500" },
-                      { mood: "tired", icon: Frown, label: "Tired", color: "text-orange-500" },
-                    ].map(({ mood, icon: Icon, label, color }) => (
+                      { mood: "great", icon: Sparkles, label: "Great!", color: "text-emerald-500", hoverBg: "hover:bg-emerald-500/10 hover:border-emerald-500/30" },
+                      { mood: "good", icon: Smile, label: "Good", color: "text-blue-500", hoverBg: "hover:bg-blue-500/10 hover:border-blue-500/30" },
+                      { mood: "okay", icon: Meh, label: "Okay", color: "text-amber-500", hoverBg: "hover:bg-amber-500/10 hover:border-amber-500/30" },
+                      { mood: "tired", icon: Frown, label: "Tired", color: "text-orange-500", hoverBg: "hover:bg-orange-500/10 hover:border-orange-500/30" },
+                    ].map(({ mood, icon: Icon, label, color, hoverBg }, index) => (
                       <Button
                         key={mood}
                         variant={selectedMood === mood ? "default" : "outline"}
                         size="sm"
-                        className={`min-h-[40px] gap-2 transition-all ${
+                        className={`min-h-[44px] gap-2 transition-all duration-300 transform hover:scale-105 active:scale-95 ${
                           selectedMood === mood 
-                            ? "" 
-                            : `hover:bg-primary/10`
+                            ? "shadow-md" 
+                            : hoverBg
                         }`}
+                        style={{ animationDelay: `${0.3 + index * 0.1}s` }}
                         onClick={() => {
                           setSelectedMood(mood);
                           setQuoteIndex(Math.floor(Math.random() * 8));
                         }}
                       >
-                        <Icon className={`h-4 w-4 ${selectedMood === mood ? "" : color}`} />
+                        <Icon className={`h-4 w-4 transition-transform duration-300 ${selectedMood === mood ? "animate-pulse" : color}`} />
                         {label}
                       </Button>
                     ))}
@@ -174,26 +182,26 @@ const Home = () => {
 
             {/* Motivational Quote Card */}
             {selectedMood && (
-              <Card className="bg-card border-border mb-6 animate-fade-in">
-                <CardContent className="py-5">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-full bg-primary/10 shrink-0">
-                      <Sparkles className="h-4 w-4 text-primary" />
+              <Card className="bg-gradient-to-r from-card via-card to-primary/5 border-border mb-6 animate-fade-in shadow-md hover:shadow-lg transition-all duration-500 group">
+                <CardContent className="py-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 shrink-0 group-hover:scale-110 transition-transform duration-300">
+                      <Sparkles className="h-5 w-5 text-primary animate-pulse" />
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="text-sm text-muted-foreground">Daily Motivation</p>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm text-muted-foreground font-medium">✨ Daily Motivation</p>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 hover:bg-primary/10 transition-all duration-300 hover:rotate-180"
                           onClick={() => setQuoteIndex((prev) => (prev + 1) % 8)}
                         >
                           <RefreshCw className="h-4 w-4" />
                         </Button>
                       </div>
-                      <p className="text-foreground font-medium italic">
-                        {quotes[selectedMood as keyof typeof quotes][quoteIndex]}
+                      <p className="text-foreground font-medium italic text-lg leading-relaxed transition-all duration-500">
+                        "{quotes[selectedMood as keyof typeof quotes][quoteIndex]}"
                       </p>
                     </div>
                   </div>
@@ -203,23 +211,23 @@ const Home = () => {
 
             {/* Progress Tracking Section */}
             {!isGuest && (
-              <div className="mb-8 space-y-4">
+              <div className="mb-8 space-y-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
                 <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
+                  <TrendingUp className="h-5 w-5 text-primary animate-bounce" style={{ animationDuration: '2s' }} />
                   Today's Progress
                 </h3>
                 
                 <div className="grid md:grid-cols-2 gap-4">
                   {/* Exercise Progress Card */}
-                  <Card className="bg-card border-border">
+                  <Card className="bg-card border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg group">
                     <CardContent className="pt-5">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <Dumbbell className="h-5 w-5 text-amber-500" />
+                          <Dumbbell className="h-5 w-5 text-amber-500 group-hover:animate-bounce" />
                           <span className="font-medium text-foreground">Exercise</span>
                         </div>
                         <Link to="/exercises">
-                          <Button variant="ghost" size="sm" className="text-xs min-h-[32px]">
+                          <Button variant="ghost" size="sm" className="text-xs min-h-[32px] hover:bg-primary/10 transition-all duration-300">
                             View Details
                           </Button>
                         </Link>
@@ -268,15 +276,15 @@ const Home = () => {
                   </Card>
 
                   {/* Nutrition Progress Card */}
-                  <Card className="bg-card border-border">
+                  <Card className="bg-card border-border hover:border-emerald-500/30 transition-all duration-300 hover:shadow-lg group">
                     <CardContent className="pt-5">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <Apple className="h-5 w-5 text-emerald-500" />
+                          <Apple className="h-5 w-5 text-emerald-500 group-hover:animate-bounce" />
                           <span className="font-medium text-foreground">Nutrition</span>
                         </div>
                         <Link to="/nutrition">
-                          <Button variant="ghost" size="sm" className="text-xs min-h-[32px]">
+                          <Button variant="ghost" size="sm" className="text-xs min-h-[32px] hover:bg-emerald-500/10 transition-all duration-300">
                             View Details
                           </Button>
                         </Link>
@@ -316,49 +324,49 @@ const Home = () => {
 
             {/* Guest Banner */}
             {isGuest && (
-              <Card className="bg-amber-500/10 border-amber-500/20 mb-6">
+              <Card className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/20 mb-6 animate-fade-in shadow-md">
                 <CardContent className="py-4">
                   <p className="text-sm text-amber-600 dark:text-amber-400 text-center">
-                    You're in guest mode. <Link to="/" className="underline font-medium">Sign in</Link> to track your progress and save your data!
+                    ✨ You're in guest mode. <Link to="/" className="underline font-medium hover:text-amber-500 transition-colors">Sign in</Link> to track your progress and save your data!
                   </p>
                 </CardContent>
               </Card>
             )}
 
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-full bg-primary/20">
+            <div className="flex items-center gap-3 mb-6 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+              <div className="p-2 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 shadow-sm">
                 <Target className="h-5 w-5 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground">Your Fitness Goal</h3>
             </div>
 
             {fitnessPlan ? (
-              <Card className="bg-card border-border">
+              <Card className="bg-gradient-to-br from-card to-primary/5 border-border hover:shadow-xl transition-all duration-500 animate-fade-in" style={{ animationDelay: '0.6s' }}>
                 <CardContent className="pt-6">
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div className="flex items-start gap-3">
-                      <Target className="h-5 w-5 text-primary mt-0.5" />
+                    <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-primary/5 transition-colors duration-300 group">
+                      <Target className="h-5 w-5 text-primary mt-0.5 group-hover:scale-110 transition-transform" />
                       <div>
                         <p className="text-sm text-muted-foreground">Goal</p>
                         <p className="font-medium text-foreground">{fitnessPlan.goal}</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3">
-                      <Calendar className="h-5 w-5 text-emerald-500 mt-0.5" />
+                    <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-emerald-500/5 transition-colors duration-300 group">
+                      <Calendar className="h-5 w-5 text-emerald-500 mt-0.5 group-hover:scale-110 transition-transform" />
                       <div>
                         <p className="text-sm text-muted-foreground">Weekly Plan</p>
                         <p className="font-medium text-foreground">{fitnessPlan.weeklyPlan}</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3">
-                      <Dumbbell className="h-5 w-5 text-amber-500 mt-0.5" />
+                    <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-amber-500/5 transition-colors duration-300 group">
+                      <Dumbbell className="h-5 w-5 text-amber-500 mt-0.5 group-hover:scale-110 transition-transform" />
                       <div>
                         <p className="text-sm text-muted-foreground">Workout Style</p>
                         <p className="font-medium text-foreground">{fitnessPlan.workoutStyle}</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3">
-                      <Clock className="h-5 w-5 text-blue-500 mt-0.5" />
+                    <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-500/5 transition-colors duration-300 group">
+                      <Clock className="h-5 w-5 text-blue-500 mt-0.5 group-hover:scale-110 transition-transform" />
                       <div>
                         <p className="text-sm text-muted-foreground">Duration</p>
                         <p className="font-medium text-foreground">{fitnessPlan.duration}</p>
@@ -368,15 +376,18 @@ const Home = () => {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="bg-card border-border">
+              <Card className="bg-gradient-to-br from-card to-muted/20 border-border hover:shadow-lg transition-all duration-300 animate-fade-in" style={{ animationDelay: '0.6s' }}>
                 <CardContent className="py-12 text-center">
-                  <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <div className="relative inline-block">
+                    <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-pulse" />
+                    <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl animate-pulse" />
+                  </div>
                   <h3 className="text-lg font-medium text-foreground mb-2">No Fitness Goal Set</h3>
                   <p className="text-muted-foreground mb-6">
                     Complete the onboarding to set your personalized fitness goals
                   </p>
                   <Link to="/onboarding">
-                    <Button className="min-h-[44px]">Set Your Goals</Button>
+                    <Button className="min-h-[44px] shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95">Set Your Goals</Button>
                   </Link>
                 </CardContent>
               </Card>
