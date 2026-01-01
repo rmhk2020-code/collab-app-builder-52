@@ -91,7 +91,7 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -113,9 +113,16 @@ const Auth = () => {
             throw error;
           }
         } else {
+          // Send welcome email (don't block signup flow)
+          supabase.functions.invoke("send-welcome-email", {
+            body: { email, name: name || undefined },
+          }).catch((emailError) => {
+            console.error("Failed to send welcome email:", emailError);
+          });
+
           toast({
             title: "Account created!",
-            description: "Check your email for a confirmation link, or continue to set up your fitness plan.",
+            description: "Check your email for a welcome message, and let's set up your fitness plan.",
           });
           setIsGuest(false);
           navigate("/onboarding");
