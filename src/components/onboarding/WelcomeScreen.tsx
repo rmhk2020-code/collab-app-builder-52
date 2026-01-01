@@ -27,6 +27,10 @@ const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
       >
         Continue
       </Button>
+      
+      <p className="mt-8 text-sm text-muted-foreground font-medium tracking-wide">
+        Health Kinetics
+      </p>
     </div>
   );
 };

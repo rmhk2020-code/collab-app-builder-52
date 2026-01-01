@@ -249,8 +249,9 @@ const Home = () => {
 
       {/* Footer */}
       <footer className="py-8 px-4 border-t border-border">
-        <div className="container mx-auto max-w-6xl text-center text-muted-foreground">
-          <p>Slim & Smart — Your personalized path to athletic excellence</p>
+        <div className="container mx-auto max-w-6xl text-center space-y-2">
+          <p className="text-muted-foreground">Slim & Smart — Your personalized path to athletic excellence</p>
+          <p className="text-sm font-medium text-muted-foreground tracking-wide">Health Kinetics</p>
         </div>
       </footer>
     </div>

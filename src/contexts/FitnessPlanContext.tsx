@@ -13,6 +13,19 @@ export type OnboardingAnswers = {
   [key: number]: string | null;
 };
 
+export type FoodLog = {
+  id: string;
+  name: string;
+  calories: number;
+  timestamp: Date;
+};
+
+export type ExerciseLog = {
+  id: string;
+  name: string;
+  timestamp: Date;
+};
+
 interface FitnessPlanContextType {
   fitnessPlan: FitnessPlan | null;
   setFitnessPlan: (plan: FitnessPlan | null) => void;
@@ -21,6 +34,7 @@ interface FitnessPlanContextType {
   caloriesEaten: number;
   setCaloriesEaten: (calories: number) => void;
   dailyCalorieGoal: number;
+  setDailyCalorieGoal: (goal: number) => void;
   exercisesCompletedToday: number;
   setExercisesCompletedToday: (count: number) => void;
   exercisesCompletedThisWeek: number;
@@ -28,7 +42,15 @@ interface FitnessPlanContextType {
   exercisesCompletedThisMonth: number;
   setExercisesCompletedThisMonth: (count: number) => void;
   weeklyExerciseGoal: number;
+  setWeeklyExerciseGoal: (goal: number) => void;
   monthlyExerciseGoal: number;
+  setMonthlyExerciseGoal: (goal: number) => void;
+  isGuest: boolean;
+  setIsGuest: (isGuest: boolean) => void;
+  foodLogs: FoodLog[];
+  addFoodLog: (food: Omit<FoodLog, "id" | "timestamp">) => void;
+  exerciseLogs: ExerciseLog[];
+  addExerciseLog: (exercise: Omit<ExerciseLog, "id" | "timestamp">) => void;
 }
 
 const FitnessPlanContext = createContext<FitnessPlanContextType | undefined>(undefined);
@@ -37,13 +59,37 @@ export const FitnessPlanProvider = ({ children }: { children: ReactNode }) => {
   const [fitnessPlan, setFitnessPlan] = useState<FitnessPlan | null>(null);
   const [answers, setAnswers] = useState<OnboardingAnswers>({});
   const [caloriesEaten, setCaloriesEaten] = useState(0);
+  const [dailyCalorieGoal, setDailyCalorieGoal] = useState(2000);
   const [exercisesCompletedToday, setExercisesCompletedToday] = useState(0);
   const [exercisesCompletedThisWeek, setExercisesCompletedThisWeek] = useState(0);
   const [exercisesCompletedThisMonth, setExercisesCompletedThisMonth] = useState(0);
+  const [weeklyExerciseGoal, setWeeklyExerciseGoal] = useState(5);
+  const [monthlyExerciseGoal, setMonthlyExerciseGoal] = useState(20);
+  const [isGuest, setIsGuest] = useState(false);
+  const [foodLogs, setFoodLogs] = useState<FoodLog[]>([]);
+  const [exerciseLogs, setExerciseLogs] = useState<ExerciseLog[]>([]);
 
-  const dailyCalorieGoal = 2000; // Default, could be personalized
-  const weeklyExerciseGoal = 5;
-  const monthlyExerciseGoal = 20;
+  const addFoodLog = (food: Omit<FoodLog, "id" | "timestamp">) => {
+    const newLog: FoodLog = {
+      ...food,
+      id: crypto.randomUUID(),
+      timestamp: new Date(),
+    };
+    setFoodLogs((prev) => [...prev, newLog]);
+    setCaloriesEaten((prev) => prev + food.calories);
+  };
+
+  const addExerciseLog = (exercise: Omit<ExerciseLog, "id" | "timestamp">) => {
+    const newLog: ExerciseLog = {
+      ...exercise,
+      id: crypto.randomUUID(),
+      timestamp: new Date(),
+    };
+    setExerciseLogs((prev) => [...prev, newLog]);
+    setExercisesCompletedToday((prev) => prev + 1);
+    setExercisesCompletedThisWeek((prev) => prev + 1);
+    setExercisesCompletedThisMonth((prev) => prev + 1);
+  };
 
   return (
     <FitnessPlanContext.Provider
@@ -55,6 +101,7 @@ export const FitnessPlanProvider = ({ children }: { children: ReactNode }) => {
         caloriesEaten,
         setCaloriesEaten,
         dailyCalorieGoal,
+        setDailyCalorieGoal,
         exercisesCompletedToday,
         setExercisesCompletedToday,
         exercisesCompletedThisWeek,
@@ -62,7 +109,15 @@ export const FitnessPlanProvider = ({ children }: { children: ReactNode }) => {
         exercisesCompletedThisMonth,
         setExercisesCompletedThisMonth,
         weeklyExerciseGoal,
+        setWeeklyExerciseGoal,
         monthlyExerciseGoal,
+        setMonthlyExerciseGoal,
+        isGuest,
+        setIsGuest,
+        foodLogs,
+        addFoodLog,
+        exerciseLogs,
+        addExerciseLog,
       }}
     >
       {children}

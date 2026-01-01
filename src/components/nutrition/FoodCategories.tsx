@@ -1,108 +1,49 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Heart, Dumbbell, Zap, Eye, Bone } from "lucide-react";
+import { Brain, Heart, Dumbbell, Zap, Eye, Bone, Shield, Leaf, Sparkles, Scale, Flame, Moon } from "lucide-react";
+import { foodCategories } from "@/data/foodData";
+import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 
-interface FoodItem {
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fats: number;
-  isHealthy: boolean;
-  benefits: string[];
-}
-
-interface FoodCategory {
-  title: string;
-  icon: React.ReactNode;
-  description: string;
-  foods: FoodItem[];
-}
-
-const foodCategories: FoodCategory[] = [
-  {
-    title: "Brain & Focus",
-    icon: <Brain className="h-5 w-5" />,
-    description: "Foods that enhance cognitive function and mental clarity",
-    foods: [
-      { name: "Salmon", calories: 208, protein: 20, carbs: 0, fats: 13, isHealthy: true, benefits: ["Omega-3", "DHA"] },
-      { name: "Blueberries", calories: 57, protein: 0.7, carbs: 14, fats: 0.3, isHealthy: true, benefits: ["Antioxidants", "Vitamin C"] },
-      { name: "Walnuts", calories: 185, protein: 4.3, carbs: 4, fats: 18, isHealthy: true, benefits: ["Omega-3", "Vitamin E"] },
-      { name: "Dark Chocolate", calories: 170, protein: 2, carbs: 13, fats: 12, isHealthy: true, benefits: ["Flavonoids", "Iron"] },
-    ]
-  },
-  {
-    title: "Heart Health",
-    icon: <Heart className="h-5 w-5" />,
-    description: "Foods that support cardiovascular function",
-    foods: [
-      { name: "Oats", calories: 154, protein: 6, carbs: 27, fats: 3, isHealthy: true, benefits: ["Fiber", "Beta-glucan"] },
-      { name: "Avocado", calories: 160, protein: 2, carbs: 9, fats: 15, isHealthy: true, benefits: ["Potassium", "Healthy fats"] },
-      { name: "Spinach", calories: 23, protein: 3, carbs: 4, fats: 0.4, isHealthy: true, benefits: ["Iron", "Folate"] },
-      { name: "Olive Oil", calories: 119, protein: 0, carbs: 0, fats: 14, isHealthy: true, benefits: ["Monounsaturated fats", "Polyphenols"] },
-    ]
-  },
-  {
-    title: "Muscle Building",
-    icon: <Dumbbell className="h-5 w-5" />,
-    description: "High-protein foods for muscle growth and recovery",
-    foods: [
-      { name: "Chicken Breast", calories: 165, protein: 31, carbs: 0, fats: 4, isHealthy: true, benefits: ["Complete protein", "B vitamins"] },
-      { name: "Greek Yogurt", calories: 100, protein: 17, carbs: 6, fats: 1, isHealthy: true, benefits: ["Casein protein", "Probiotics"] },
-      { name: "Eggs", calories: 155, protein: 13, carbs: 1, fats: 11, isHealthy: true, benefits: ["Complete protein", "Choline"] },
-      { name: "Lean Beef", calories: 250, protein: 26, carbs: 0, fats: 15, isHealthy: true, benefits: ["Iron", "Creatine"] },
-    ]
-  },
-  {
-    title: "Energy & Endurance",
-    icon: <Zap className="h-5 w-5" />,
-    description: "Foods for sustained energy during workouts",
-    foods: [
-      { name: "Bananas", calories: 89, protein: 1, carbs: 23, fats: 0.3, isHealthy: true, benefits: ["Potassium", "Quick carbs"] },
-      { name: "Sweet Potato", calories: 86, protein: 2, carbs: 20, fats: 0, isHealthy: true, benefits: ["Complex carbs", "Vitamin A"] },
-      { name: "Quinoa", calories: 120, protein: 4, carbs: 21, fats: 2, isHealthy: true, benefits: ["Complete protein", "Fiber"] },
-      { name: "Brown Rice", calories: 112, protein: 2.6, carbs: 24, fats: 0.9, isHealthy: true, benefits: ["Complex carbs", "Magnesium"] },
-    ]
-  },
-  {
-    title: "Eye Health",
-    icon: <Eye className="h-5 w-5" />,
-    description: "Foods rich in nutrients for vision support",
-    foods: [
-      { name: "Carrots", calories: 41, protein: 0.9, carbs: 10, fats: 0.2, isHealthy: true, benefits: ["Beta-carotene", "Vitamin A"] },
-      { name: "Kale", calories: 33, protein: 2.9, carbs: 6, fats: 0.6, isHealthy: true, benefits: ["Lutein", "Zeaxanthin"] },
-      { name: "Bell Peppers", calories: 31, protein: 1, carbs: 6, fats: 0.3, isHealthy: true, benefits: ["Vitamin C", "Vitamin A"] },
-      { name: "Eggs", calories: 155, protein: 13, carbs: 1, fats: 11, isHealthy: true, benefits: ["Lutein", "Zinc"] },
-    ]
-  },
-  {
-    title: "Bone Strength",
-    icon: <Bone className="h-5 w-5" />,
-    description: "Foods that support bone density and joint health",
-    foods: [
-      { name: "Milk", calories: 42, protein: 3.4, carbs: 5, fats: 1, isHealthy: true, benefits: ["Calcium", "Vitamin D"] },
-      { name: "Sardines", calories: 208, protein: 25, carbs: 0, fats: 11, isHealthy: true, benefits: ["Calcium", "Omega-3"] },
-      { name: "Broccoli", calories: 34, protein: 2.8, carbs: 7, fats: 0.4, isHealthy: true, benefits: ["Vitamin K", "Calcium"] },
-      { name: "Almonds", calories: 164, protein: 6, carbs: 6, fats: 14, isHealthy: true, benefits: ["Calcium", "Magnesium"] },
-    ]
-  },
-];
+const iconMap: Record<string, React.ReactNode> = {
+  Brain: <Brain className="h-5 w-5" />,
+  Heart: <Heart className="h-5 w-5" />,
+  Dumbbell: <Dumbbell className="h-5 w-5" />,
+  Zap: <Zap className="h-5 w-5" />,
+  Eye: <Eye className="h-5 w-5" />,
+  Bone: <Bone className="h-5 w-5" />,
+  Shield: <Shield className="h-5 w-5" />,
+  Leaf: <Leaf className="h-5 w-5" />,
+  Sparkles: <Sparkles className="h-5 w-5" />,
+  Scale: <Scale className="h-5 w-5" />,
+  Flame: <Flame className="h-5 w-5" />,
+  Moon: <Moon className="h-5 w-5" />,
+};
 
 export const FoodCategories = () => {
+  const { isGuest } = useFitnessPlan();
+  
+  // Guest users see only first category with 5 foods
+  const displayCategories = isGuest 
+    ? [{ ...foodCategories[0], foods: foodCategories[0].foods.slice(0, 5) }]
+    : foodCategories;
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-foreground mb-2">Foods by Body Benefit</h2>
-        <p className="text-muted-foreground">Discover foods that target specific areas of your health</p>
+        <p className="text-muted-foreground">
+          Discover foods that target specific areas of your health
+          {isGuest && <span className="block text-sm text-amber-500 mt-1">Guest preview: Showing 5 foods. Sign in for 300+ foods!</span>}
+        </p>
       </div>
       
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {foodCategories.map((category) => (
+        {displayCategories.map((category) => (
           <Card key={category.title} className="border-border bg-card">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                  {category.icon}
+                  {iconMap[category.icon] || <Leaf className="h-5 w-5" />}
                 </div>
                 <div>
                   <CardTitle className="text-lg text-card-foreground">{category.title}</CardTitle>
