@@ -4,7 +4,9 @@ import WelcomeScreen from "@/components/onboarding/WelcomeScreen";
 import ExplanationScreen from "@/components/onboarding/ExplanationScreen";
 import QuestionScreen from "@/components/onboarding/QuestionScreen";
 import FitnessPlanScreen from "@/components/onboarding/FitnessPlanScreen";
+import FeedbackScreen from "@/components/onboarding/FeedbackScreen";
 import { supabase } from "@/integrations/supabase/client";
+import { useFitnessPlan, type FitnessPlan, type OnboardingAnswers } from "@/contexts/FitnessPlanContext";
 
 const questions = [
   "What's your main fitness goal right now?",
@@ -16,22 +18,10 @@ const questions = [
   "What usually makes it hard for you to stay consistent with workouts?",
 ];
 
-export type OnboardingAnswers = {
-  [key: number]: string | null;
-};
-
-export type FitnessPlan = {
-  goal: string;
-  weeklyPlan: string;
-  workoutStyle: string;
-  stayingConsistent: string;
-  duration: string;
-  progression: string;
-};
-
 const Onboarding = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState<"welcome" | "explanation" | "questions" | "loading" | "plan">("welcome");
+  const { setFitnessPlan: setGlobalPlan, setAnswers: setGlobalAnswers } = useFitnessPlan();
+  const [currentStep, setCurrentStep] = useState<"welcome" | "explanation" | "questions" | "loading" | "plan" | "feedback">("welcome");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<OnboardingAnswers>({});
   const [fitnessPlan, setFitnessPlan] = useState<FitnessPlan | null>(null);
@@ -58,38 +48,63 @@ const Onboarding = () => {
     }
   };
 
-  const generateFitnessPlan = async (finalAnswers: OnboardingAnswers) => {
+  const handleBack = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion((prev) => prev - 1);
+    } else {
+      setCurrentStep("explanation");
+    }
+  };
+
+  const generateFitnessPlan = async (finalAnswers: OnboardingAnswers, feedback?: string) => {
     setCurrentStep("loading");
     setIsGenerating(true);
 
     try {
       const { data, error } = await supabase.functions.invoke("generate-fitness-plan", {
-        body: { answers: finalAnswers, questions },
+        body: { answers: finalAnswers, questions, feedback },
       });
 
       if (error) throw error;
 
       setFitnessPlan(data.plan);
+      setGlobalPlan(data.plan);
+      setGlobalAnswers(finalAnswers);
       setCurrentStep("plan");
     } catch (error) {
       console.error("Error generating fitness plan:", error);
       // Fallback plan if AI fails
-      setFitnessPlan({
+      const fallbackPlan: FitnessPlan = {
         goal: finalAnswers[0] || "General fitness improvement",
         weeklyPlan: "Start with 3 days per week, gradually increasing as you build consistency.",
         workoutStyle: "A mix of cardio and strength training tailored to your preferences.",
         stayingConsistent: "Set reminders, start small, and celebrate every workout completed.",
         duration: "30-45 minutes per session",
         progression: "Week 1-2: Foundation building. Week 3-4: Gradual intensity increase.",
-      });
+      };
+      setFitnessPlan(fallbackPlan);
+      setGlobalPlan(fallbackPlan);
+      setGlobalAnswers(finalAnswers);
       setCurrentStep("plan");
     } finally {
       setIsGenerating(false);
     }
   };
 
+  const handleFeedback = () => {
+    setCurrentStep("feedback");
+  };
+
+  const handleFeedbackSubmit = (feedback: string) => {
+    generateFitnessPlan(answers, feedback);
+  };
+
+  const handleBackToPlan = () => {
+    setCurrentStep("plan");
+  };
+
   const handleFinish = () => {
-    navigate("/home");
+    navigate("/auth");
   };
 
   return (
@@ -107,6 +122,7 @@ const Onboarding = () => {
           totalQuestions={questions.length}
           onNext={handleAnswer}
           onSkip={() => handleAnswer(null)}
+          onBack={handleBack}
         />
       )}
       {currentStep === "loading" && (
@@ -121,7 +137,19 @@ const Onboarding = () => {
         </div>
       )}
       {currentStep === "plan" && fitnessPlan && (
-        <FitnessPlanScreen plan={fitnessPlan} onFinish={handleFinish} />
+        <FitnessPlanScreen 
+          plan={fitnessPlan} 
+          onFinish={handleFinish} 
+          onFeedback={handleFeedback}
+        />
+      )}
+      {currentStep === "feedback" && fitnessPlan && (
+        <FeedbackScreen
+          currentPlan={fitnessPlan}
+          onSubmit={handleFeedbackSubmit}
+          onBack={handleBackToPlan}
+          isLoading={isGenerating}
+        />
       )}
     </div>
   );

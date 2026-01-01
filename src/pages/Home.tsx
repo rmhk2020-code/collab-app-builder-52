@@ -1,11 +1,62 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dumbbell, Apple, Target, Zap, Users, TrendingUp } from "lucide-react";
+import { Dumbbell, Apple, Target, Zap, TrendingUp, Calendar, Clock, Heart } from "lucide-react";
+import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 
 const Home = () => {
+  const { fitnessPlan } = useFitnessPlan();
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Goal Summary Section - Only shown if user has a plan */}
+      {fitnessPlan && (
+        <section className="bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 py-6 px-4 border-b border-border">
+          <div className="container mx-auto max-w-6xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-full bg-primary/20">
+                <Target className="h-5 w-5 text-primary" />
+              </div>
+              <h2 className="text-xl font-semibold text-foreground">Your Fitness Goal</h2>
+            </div>
+            <Card className="bg-card/80 backdrop-blur">
+              <CardContent className="pt-6">
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="flex items-start gap-3">
+                    <Target className="h-5 w-5 text-primary mt-0.5" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Goal</p>
+                      <p className="font-medium text-foreground">{fitnessPlan.goal}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Calendar className="h-5 w-5 text-emerald-500 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Weekly Plan</p>
+                      <p className="font-medium text-foreground">{fitnessPlan.weeklyPlan}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Dumbbell className="h-5 w-5 text-amber-500 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Workout Style</p>
+                      <p className="font-medium text-foreground">{fitnessPlan.workoutStyle}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Clock className="h-5 w-5 text-blue-500 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Duration</p>
+                      <p className="font-medium text-foreground">{fitnessPlan.duration}</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      )}
+
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/10 py-20 px-4">
         <div className="container mx-auto max-w-6xl">
