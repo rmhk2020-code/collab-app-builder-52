@@ -93,7 +93,19 @@ interface SettingsContextType {
   setAppPreferences: (preferences: AppPreferences) => void;
   privacySettings: PrivacySettings;
   setPrivacySettings: (settings: PrivacySettings) => void;
+  loadAllSettings: (settings: Partial<AllSettings>) => void;
 }
+
+export type AllSettings = {
+  userProfile?: UserProfile;
+  fitnessPlanSettings?: FitnessPlanSettings;
+  exerciseSettings?: ExerciseSettings;
+  dietSettings?: DietSettings;
+  trackingSettings?: TrackingSettings;
+  notificationSettings?: NotificationSettings;
+  appPreferences?: AppPreferences;
+  privacySettings?: PrivacySettings;
+};
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
@@ -183,6 +195,17 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [appPreferences, setAppPreferences] = useState<AppPreferences>(defaultAppPreferences);
   const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(defaultPrivacySettings);
 
+  const loadAllSettings = (settings: Partial<AllSettings>) => {
+    if (settings.userProfile) setUserProfile(settings.userProfile);
+    if (settings.fitnessPlanSettings) setFitnessPlanSettings(settings.fitnessPlanSettings);
+    if (settings.exerciseSettings) setExerciseSettings(settings.exerciseSettings);
+    if (settings.dietSettings) setDietSettings(settings.dietSettings);
+    if (settings.trackingSettings) setTrackingSettings(settings.trackingSettings);
+    if (settings.notificationSettings) setNotificationSettings(settings.notificationSettings);
+    if (settings.appPreferences) setAppPreferences(settings.appPreferences);
+    if (settings.privacySettings) setPrivacySettings(settings.privacySettings);
+  };
+
   return (
     <SettingsContext.Provider
       value={{
@@ -202,6 +225,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         setAppPreferences,
         privacySettings,
         setPrivacySettings,
+        loadAllSettings,
       }}
     >
       {children}

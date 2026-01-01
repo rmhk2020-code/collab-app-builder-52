@@ -60,20 +60,28 @@ export type WaterIntakeEntry = {
 
 interface HealthVitalsContextType {
   weightHistory: WeightEntry[];
+  setWeightHistory: (entries: WeightEntry[]) => void;
   addWeightEntry: (entry: Omit<WeightEntry, "id" | "timestamp">) => void;
   bloodPressureHistory: BloodPressureEntry[];
+  setBloodPressureHistory: (entries: BloodPressureEntry[]) => void;
   addBloodPressureEntry: (entry: Omit<BloodPressureEntry, "id" | "timestamp">) => void;
   pulseHistory: PulseEntry[];
+  setPulseHistory: (entries: PulseEntry[]) => void;
   addPulseEntry: (entry: Omit<PulseEntry, "id" | "timestamp">) => void;
   bodyMeasurements: BodyMeasurement[];
+  setBodyMeasurements: (entries: BodyMeasurement[]) => void;
   addBodyMeasurement: (entry: Omit<BodyMeasurement, "id" | "timestamp">) => void;
   oxygenHistory: OxygenSaturation[];
+  setOxygenHistory: (entries: OxygenSaturation[]) => void;
   addOxygenEntry: (entry: Omit<OxygenSaturation, "id" | "timestamp">) => void;
   sleepHistory: SleepEntry[];
+  setSleepHistory: (entries: SleepEntry[]) => void;
   addSleepEntry: (entry: Omit<SleepEntry, "id" | "timestamp">) => void;
   stepsHistory: StepsEntry[];
+  setStepsHistory: (entries: StepsEntry[]) => void;
   addStepsEntry: (entry: Omit<StepsEntry, "id" | "timestamp">) => void;
   waterIntakeHistory: WaterIntakeEntry[];
+  setWaterIntakeHistory: (entries: WaterIntakeEntry[]) => void;
   addWaterIntakeEntry: (entry: Omit<WaterIntakeEntry, "id" | "timestamp">) => void;
   clearAllData: () => void;
 }
@@ -177,20 +185,28 @@ export const HealthVitalsProvider = ({ children }: { children: ReactNode }) => {
     <HealthVitalsContext.Provider
       value={{
         weightHistory,
+        setWeightHistory,
         addWeightEntry,
         bloodPressureHistory,
+        setBloodPressureHistory,
         addBloodPressureEntry,
         pulseHistory,
+        setPulseHistory,
         addPulseEntry,
         bodyMeasurements,
+        setBodyMeasurements,
         addBodyMeasurement,
         oxygenHistory,
+        setOxygenHistory,
         addOxygenEntry,
         sleepHistory,
+        setSleepHistory,
         addSleepEntry,
         stepsHistory,
+        setStepsHistory,
         addStepsEntry,
         waterIntakeHistory,
+        setWaterIntakeHistory,
         addWaterIntakeEntry,
         clearAllData,
       }}
