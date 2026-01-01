@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Loader2, Check, X, ArrowRight } from "lucide-react";
+import { Lock, Loader2, Check, X, ArrowRight, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import healthKineticsLogo from "@/assets/health-kinetics-logo.png";
@@ -123,22 +123,10 @@ const SetPassword = () => {
     }
   };
 
-  const handleSkip = async () => {
-    // Allow user to skip for now
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('fitness_plan')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (profile?.fitness_plan) {
-        navigate("/home");
-      } else {
-        navigate("/onboarding");
-      }
-    }
+  const handleBackToSignIn = async () => {
+    // Sign out and go back to auth page
+    await supabase.auth.signOut();
+    navigate("/auth");
   };
 
   const passwordValidation = validatePassword(password);
@@ -163,7 +151,7 @@ const SetPassword = () => {
           </div>
           <CardTitle className="text-2xl font-semibold">Set Your Password</CardTitle>
           <CardDescription>
-            Create a password so you can also sign in with email
+            Create a password to secure your account
             {userEmail && <span className="block mt-1 text-primary">{userEmail}</span>}
           </CardDescription>
         </CardHeader>
@@ -220,7 +208,7 @@ const SetPassword = () => {
                 </>
               ) : (
                 <>
-                  Set Password
+                  Set Password & Continue
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </>
               )}
@@ -229,11 +217,12 @@ const SetPassword = () => {
 
           <Button
             variant="ghost"
-            className="w-full min-h-[44px] text-muted-foreground"
-            onClick={handleSkip}
+            className="w-full min-h-[44px] text-muted-foreground gap-2"
+            onClick={handleBackToSignIn}
             disabled={isLoading}
           >
-            Skip for now
+            <ArrowLeft className="w-4 h-4" />
+            Back to Sign In
           </Button>
         </CardContent>
       </Card>
