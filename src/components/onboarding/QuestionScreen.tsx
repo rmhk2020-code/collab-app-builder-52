@@ -67,7 +67,7 @@ const QuestionScreen = ({
         <Button
           onClick={handleNext}
           size="lg"
-          className="w-full text-lg py-6 transition-all duration-300 hover:scale-105"
+          className="w-full text-lg min-h-[52px] py-4 transition-all duration-300 hover:scale-105 active:scale-[0.98]"
           disabled={!answer.trim()}
         >
           Next
@@ -77,7 +77,7 @@ const QuestionScreen = ({
             onClick={onBack}
             variant="outline"
             size="lg"
-            className="flex-1 text-lg py-6"
+            className="flex-1 text-lg min-h-[52px] py-4 active:scale-[0.98] transition-transform"
             disabled={questionNumber === 1}
           >
             Back
@@ -86,7 +86,7 @@ const QuestionScreen = ({
             onClick={handleSkip}
             variant="ghost"
             size="lg"
-            className="flex-1 text-lg py-6 text-muted-foreground hover:text-foreground"
+            className="flex-1 text-lg min-h-[52px] py-4 text-muted-foreground hover:text-foreground active:scale-[0.98] transition-transform"
           >
             Skip
           </Button>

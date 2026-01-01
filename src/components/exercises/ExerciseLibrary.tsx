@@ -7,7 +7,11 @@ import { Loader2, Dumbbell, Target, Zap, Clock, Calendar } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
-export const ExerciseLibrary = () => {
+interface ExerciseLibraryProps {
+  isGuest?: boolean;
+}
+
+export const ExerciseLibrary = ({ isGuest = false }: ExerciseLibraryProps) => {
   const [filters, setFilters] = useState<FittFilter>({});
   const { exercises, loading, error } = useExercises(filters);
 
@@ -142,7 +146,7 @@ export const ExerciseLibrary = () => {
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {exercises.map((exercise) => (
+          {(isGuest ? exercises.slice(0, 10) : exercises).map((exercise) => (
             <ExerciseCard key={exercise.id} exercise={exercise} />
           ))}
         </div>

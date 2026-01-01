@@ -99,7 +99,7 @@ const FitnessPlanScreen = ({ plan, onFinish, onFeedback }: FitnessPlanScreenProp
             <Button
               onClick={onFinish}
               size="lg"
-              className="flex-1 text-lg py-6 transition-all duration-300 hover:scale-105"
+              className="flex-1 text-lg min-h-[52px] py-4 transition-all duration-300 hover:scale-105 active:scale-[0.98]"
             >
               Let's Get Started!
             </Button>
@@ -107,7 +107,7 @@ const FitnessPlanScreen = ({ plan, onFinish, onFeedback }: FitnessPlanScreenProp
               onClick={onFeedback}
               variant="outline"
               size="lg"
-              className="flex-1 text-lg py-6 transition-all duration-300 hover:scale-105"
+              className="flex-1 text-lg min-h-[52px] py-4 transition-all duration-300 hover:scale-105 active:scale-[0.98]"
             >
               <MessageSquare className="h-5 w-5 mr-2" />
               Give Feedback

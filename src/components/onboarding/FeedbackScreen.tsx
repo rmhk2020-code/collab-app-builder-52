@@ -26,7 +26,7 @@ const FeedbackScreen = ({ currentPlan, onSubmit, onBack, isLoading }: FeedbackSc
         <Button
           onClick={onBack}
           variant="ghost"
-          className="mb-6"
+          className="mb-6 min-h-[44px] px-4 active:scale-[0.98] transition-transform"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Plan
@@ -70,7 +70,7 @@ const FeedbackScreen = ({ currentPlan, onSubmit, onBack, isLoading }: FeedbackSc
           <Button
             onClick={handleSubmit}
             size="lg"
-            className="w-full text-lg py-6 transition-all duration-300 hover:scale-105"
+            className="w-full text-lg min-h-[52px] py-4 transition-all duration-300 hover:scale-105 active:scale-[0.98]"
             disabled={!feedback.trim() || isLoading}
           >
             {isLoading ? (
