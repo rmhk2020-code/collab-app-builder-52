@@ -67,8 +67,14 @@ const Home = () => {
   
   const [searchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState<string>("fitness-goal");
-  const [selectedMood, setSelectedMood] = useState<string | null>(null);
-  const [quoteIndex, setQuoteIndex] = useState(0);
+  const [selectedMood, setSelectedMood] = useState<string | null>(() => {
+    // Load saved mood from localStorage
+    return localStorage.getItem("userMood");
+  });
+  const [quoteIndex, setQuoteIndex] = useState(() => {
+    const saved = localStorage.getItem("quoteIndex");
+    return saved ? parseInt(saved, 10) : 0;
+  });
 
   // Handle section from URL params
   useEffect(() => {
@@ -77,6 +83,29 @@ const Home = () => {
       setActiveSection(section);
     }
   }, [searchParams]);
+
+  // Save mood to localStorage when it changes
+  useEffect(() => {
+    if (selectedMood) {
+      localStorage.setItem("userMood", selectedMood);
+    }
+  }, [selectedMood]);
+
+  // Save quote index to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem("quoteIndex", quoteIndex.toString());
+  }, [quoteIndex]);
+
+  // Auto-cycle quotes every 30 seconds
+  useEffect(() => {
+    if (!selectedMood) return;
+    
+    const interval = setInterval(() => {
+      setQuoteIndex((prev) => (prev + 1) % 8);
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [selectedMood]);
 
   const dailyExerciseGoal = 1;
   const dailyExerciseProgress = Math.min((exercisesCompletedToday / dailyExerciseGoal) * 100, 100);
