@@ -23,7 +23,7 @@ const ExplanationScreen = ({ onStart }: ExplanationScreenProps) => {
       <Button
         onClick={onStart}
         size="lg"
-        className="w-full max-w-sm text-lg py-6 transition-all duration-300 hover:scale-105"
+        className="w-full max-w-sm text-lg min-h-[52px] py-4 transition-all duration-300 hover:scale-105 active:scale-[0.98]"
       >
         Start
       </Button>
