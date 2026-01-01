@@ -93,14 +93,23 @@ const SetPassword = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Password set successfully!",
-        description: "You can now sign in with your email and password.",
-      });
-
-      // Check if user has completed onboarding
+      // Send welcome email for new OAuth users (don't block the flow)
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
+        supabase.functions.invoke("send-welcome-email", {
+          body: { 
+            email: session.user.email, 
+            name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || undefined 
+          },
+        }).catch((emailError) => {
+          console.error("Failed to send welcome email:", emailError);
+        });
+
+        toast({
+          title: "Password set successfully!",
+          description: "Welcome to Health Kinetics! Let's set up your fitness plan.",
+        });
+
         const { data: profile } = await supabase
           .from('user_profiles')
           .select('fitness_plan')
