@@ -12,7 +12,7 @@ import healthKineticsLogo from "@/assets/health-kinetics-logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { setIsGuest, fitnessPlan } = useFitnessPlan();
+  const { setIsGuest, fitnessPlan, hasCompletedOnboarding } = useFitnessPlan();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,8 +24,8 @@ const Auth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setIsGuest(false);
-        // User is logged in, check if they have a fitness plan
-        if (fitnessPlan) {
+        // User is logged in, check if they have completed onboarding
+        if (hasCompletedOnboarding || fitnessPlan) {
           navigate("/home");
         } else {
           navigate("/onboarding");
@@ -37,7 +37,7 @@ const Auth = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setIsGuest(false);
-        if (fitnessPlan) {
+        if (hasCompletedOnboarding || fitnessPlan) {
           navigate("/home");
         } else {
           navigate("/onboarding");
@@ -46,7 +46,7 @@ const Auth = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [fitnessPlan, navigate, setIsGuest]);
+  }, [fitnessPlan, hasCompletedOnboarding, navigate, setIsGuest]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,7 +111,7 @@ const Auth = () => {
           }
         } else {
           setIsGuest(false);
-          if (fitnessPlan) {
+          if (hasCompletedOnboarding || fitnessPlan) {
             navigate("/home");
           } else {
             navigate("/onboarding");
@@ -135,7 +135,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/onboarding`,
+          redirectTo: `${window.location.origin}/home`,
         },
       });
 
@@ -156,7 +156,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "apple",
         options: {
-          redirectTo: `${window.location.origin}/onboarding`,
+          redirectTo: `${window.location.origin}/home`,
         },
       });
 

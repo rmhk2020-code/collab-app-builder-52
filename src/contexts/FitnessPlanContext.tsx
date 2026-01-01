@@ -58,7 +58,10 @@ interface FitnessPlanContextType {
 const FitnessPlanContext = createContext<FitnessPlanContextType | undefined>(undefined);
 
 export const FitnessPlanProvider = ({ children }: { children: ReactNode }) => {
-  const [fitnessPlan, setFitnessPlan] = useState<FitnessPlan | null>(null);
+  const [fitnessPlan, setFitnessPlanState] = useState<FitnessPlan | null>(() => {
+    const saved = localStorage.getItem("fitnessPlan");
+    return saved ? JSON.parse(saved) : null;
+  });
   const [answers, setAnswers] = useState<OnboardingAnswers>({});
   const [caloriesEaten, setCaloriesEaten] = useState(0);
   const [dailyCalorieGoal, setDailyCalorieGoal] = useState(2000);
@@ -68,9 +71,29 @@ export const FitnessPlanProvider = ({ children }: { children: ReactNode }) => {
   const [weeklyExerciseGoal, setWeeklyExerciseGoal] = useState(5);
   const [monthlyExerciseGoal, setMonthlyExerciseGoal] = useState(20);
   const [isGuest, setIsGuest] = useState(false);
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const [hasCompletedOnboarding, setHasCompletedOnboardingState] = useState(() => {
+    return localStorage.getItem("hasCompletedOnboarding") === "true";
+  });
   const [foodLogs, setFoodLogs] = useState<FoodLog[]>([]);
   const [exerciseLogs, setExerciseLogs] = useState<ExerciseLog[]>([]);
+
+  const setFitnessPlan = (plan: FitnessPlan | null) => {
+    setFitnessPlanState(plan);
+    if (plan) {
+      localStorage.setItem("fitnessPlan", JSON.stringify(plan));
+    } else {
+      localStorage.removeItem("fitnessPlan");
+    }
+  };
+
+  const setHasCompletedOnboarding = (completed: boolean) => {
+    setHasCompletedOnboardingState(completed);
+    if (completed) {
+      localStorage.setItem("hasCompletedOnboarding", "true");
+    } else {
+      localStorage.removeItem("hasCompletedOnboarding");
+    }
+  };
 
   const addFoodLog = (food: Omit<FoodLog, "id" | "timestamp">) => {
     const newLog: FoodLog = {

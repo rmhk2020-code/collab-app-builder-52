@@ -20,7 +20,7 @@ const questions = [
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { setFitnessPlan: setGlobalPlan, setAnswers: setGlobalAnswers } = useFitnessPlan();
+  const { setFitnessPlan: setGlobalPlan, setAnswers: setGlobalAnswers, setHasCompletedOnboarding } = useFitnessPlan();
   const [currentStep, setCurrentStep] = useState<"welcome" | "explanation" | "questions" | "loading" | "plan" | "feedback">("welcome");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<OnboardingAnswers>({});
@@ -104,6 +104,7 @@ const Onboarding = () => {
   };
 
   const handleFinish = () => {
+    setHasCompletedOnboarding(true);
     navigate("/home");
   };
 
