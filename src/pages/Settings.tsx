@@ -340,12 +340,23 @@ const Settings = () => {
   };
 
   const handleResetPlan = () => {
+    // Clear local storage
+    localStorage.removeItem("fitnessPlan");
+    localStorage.removeItem("hasCompletedOnboarding");
+    
+    // Reset context state
     setFitnessPlan(null);
     setHasCompletedOnboarding(false);
+    
     toast({
       title: "Fitness Plan Reset",
-      description: "Your fitness plan has been cleared. Complete onboarding to generate a new one.",
+      description: "Redirecting to onboarding to generate a new plan...",
     });
+    
+    // Navigate to onboarding after a short delay
+    setTimeout(() => {
+      navigate("/onboarding");
+    }, 500);
   };
 
   return (
