@@ -11,7 +11,7 @@ const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate("/auth");
+    navigate("/");
   };
 
   return (

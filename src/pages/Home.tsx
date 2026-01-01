@@ -108,7 +108,12 @@ const Home = () => {
                               "Your energy is contagious! Channel it into something amazing today.",
                               "When you feel unstoppable, you become unstoppable. Go get it!",
                               "This is your moment. Make every rep, every step count!",
-                            ][Math.floor(Date.now() / 86400000) % 3]}
+                              "Champions are made when no one is watching. Keep pushing!",
+                              "Your body can do it. It is your mind you need to convince.",
+                              "Today is the day to be better than yesterday. You have got this!",
+                              "Energy flows where intention goes. Focus and conquer!",
+                              "The fire inside you is stronger than any obstacle ahead.",
+                            ][Math.floor(Date.now() / 86400000) % 8]}
                           </>
                         )}
                         {selectedMood === "good" && (
@@ -117,7 +122,12 @@ const Home = () => {
                               "Consistency beats perfection. Keep showing up!",
                               "Good vibes lead to great results. Stay on track!",
                               "You are one workout away from a great mood. Let us go!",
-                            ][Math.floor(Date.now() / 86400000) % 3]}
+                              "Every step forward is a step toward your best self.",
+                              "Success is built one day at a time. Today counts!",
+                              "Your dedication today creates your results tomorrow.",
+                              "Stay focused, stay positive, stay strong!",
+                              "The only bad workout is the one that did not happen.",
+                            ][Math.floor(Date.now() / 86400000) % 8]}
                           </>
                         )}
                         {selectedMood === "okay" && (
@@ -126,7 +136,12 @@ const Home = () => {
                               "Progress is progress, no matter how small. You are doing great!",
                               "Some days are harder than others. What matters is you did not quit.",
                               "Even on tough days, you are building something beautiful.",
-                            ][Math.floor(Date.now() / 86400000) % 3]}
+                              "Not every day will be your best, but every day can move you forward.",
+                              "Showing up when it is hard is what separates dreamers from achievers.",
+                              "Be gentle with yourself. Growth takes time and patience.",
+                              "Small steps still move you forward. Keep going!",
+                              "You do not have to be perfect to make progress.",
+                            ][Math.floor(Date.now() / 86400000) % 8]}
                           </>
                         )}
                         {selectedMood === "tired" && (
@@ -135,7 +150,12 @@ const Home = () => {
                               "Rest is part of the journey. Recovery makes you stronger.",
                               "Listen to your body. Tomorrow is another opportunity.",
                               "Taking care of yourself is the most powerful thing you can do.",
-                            ][Math.floor(Date.now() / 86400000) % 3]}
+                              "Even rest days are part of your training. Honor your body.",
+                              "Recharging today means crushing it tomorrow. Be kind to yourself.",
+                              "Your body is your temple. Give it the rest it deserves.",
+                              "Strength is knowing when to push and when to pause.",
+                              "Recovery is not weakness. It is wisdom.",
+                            ][Math.floor(Date.now() / 86400000) % 8]}
                           </>
                         )}
                       </p>
