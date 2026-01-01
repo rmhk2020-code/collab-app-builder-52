@@ -1,7 +1,7 @@
-import { ExerciseLibrary } from "@/components/exercises/ExerciseLibrary";
+import Home from "./Home";
 
 const Index = () => {
-  return <ExerciseLibrary />;
+  return <Home />;
 };
 
 export default Index;
