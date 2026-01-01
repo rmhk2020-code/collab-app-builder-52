@@ -96,13 +96,13 @@ const Home = () => {
     localStorage.setItem("quoteIndex", quoteIndex.toString());
   }, [quoteIndex]);
 
-  // Auto-cycle quotes every 30 seconds
+  // Auto-cycle quotes every 10 seconds
   useEffect(() => {
     if (!selectedMood) return;
     
     const interval = setInterval(() => {
       setQuoteIndex((prev) => (prev + 1) % 8);
-    }, 30000);
+    }, 10000);
     
     return () => clearInterval(interval);
   }, [selectedMood]);
