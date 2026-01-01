@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 export type UserProfile = {
   name: string;
@@ -57,7 +57,7 @@ export type NotificationSettings = {
 };
 
 export type AppPreferences = {
-  theme: "light" | "dark" | "system";
+  theme: "light" | "dark";
   accentColor: string;
   language: string;
   fontSize: "small" | "medium" | "large";
@@ -166,7 +166,7 @@ const defaultNotificationSettings: NotificationSettings = {
 };
 
 const defaultAppPreferences: AppPreferences = {
-  theme: "system",
+  theme: "light",
   accentColor: "#2563EB",
   language: "en",
   fontSize: "medium",
@@ -186,14 +186,57 @@ const defaultPrivacySettings: PrivacySettings = {
 };
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
+  // Load theme from localStorage on init
+  const getInitialTheme = (): "light" | "dark" => {
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark" || saved === "light") return saved;
+    return "light";
+  };
+
+  const getInitialAppPreferences = (): AppPreferences => {
+    const savedPrefs = localStorage.getItem("appPreferences");
+    if (savedPrefs) {
+      try {
+        const parsed = JSON.parse(savedPrefs);
+        return { ...defaultAppPreferences, ...parsed };
+      } catch {
+        return defaultAppPreferences;
+      }
+    }
+    return { ...defaultAppPreferences, theme: getInitialTheme() };
+  };
+
   const [userProfile, setUserProfile] = useState<UserProfile>(defaultUserProfile);
   const [fitnessPlanSettings, setFitnessPlanSettings] = useState<FitnessPlanSettings>(defaultFitnessPlanSettings);
   const [exerciseSettings, setExerciseSettings] = useState<ExerciseSettings>(defaultExerciseSettings);
   const [dietSettings, setDietSettings] = useState<DietSettings>(defaultDietSettings);
   const [trackingSettings, setTrackingSettings] = useState<TrackingSettings>(defaultTrackingSettings);
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(defaultNotificationSettings);
-  const [appPreferences, setAppPreferences] = useState<AppPreferences>(defaultAppPreferences);
+  const [appPreferences, setAppPreferencesState] = useState<AppPreferences>(getInitialAppPreferences);
   const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(defaultPrivacySettings);
+
+  // Apply theme to document and persist
+  const setAppPreferences = (prefs: AppPreferences) => {
+    setAppPreferencesState(prefs);
+    localStorage.setItem("appPreferences", JSON.stringify(prefs));
+    localStorage.setItem("theme", prefs.theme);
+    
+    // Apply theme to document
+    if (prefs.theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
+
+  // Apply theme on mount
+  useEffect(() => {
+    if (appPreferences.theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
 
   const loadAllSettings = (settings: Partial<AllSettings>) => {
     if (settings.userProfile) setUserProfile(settings.userProfile);
