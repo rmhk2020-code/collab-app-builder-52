@@ -15,27 +15,36 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Get user from authorization header
+    // Get authorization header
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
+      console.error("No authorization header provided");
       return new Response(
         JSON.stringify({ error: "Authorization required" }),
         { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Create Supabase client with user's token to get their identity
-    const supabaseUser = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      {
-        global: {
-          headers: { Authorization: authHeader }
-        }
-      }
-    );
+    // Extract the token from "Bearer <token>"
+    const token = authHeader.replace("Bearer ", "");
+    if (!token) {
+      console.error("No token found in authorization header");
+      return new Response(
+        JSON.stringify({ error: "Invalid authorization header" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
-    const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
+    // Create Supabase client and get user using the token directly
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    
+    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+
+    // Use getUser with token parameter - this is the key fix!
+    const { data: { user }, error: userError } = await supabaseUser.auth.getUser(token);
     
     if (userError || !user) {
       console.error("Error getting user:", userError);
@@ -49,8 +58,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Create admin client to delete user
     const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      supabaseUrl,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false, autoRefreshToken: false } }
     );
 
     // Delete user profile first (if exists)

@@ -31,9 +31,9 @@ const handler = async (req: Request): Promise<Response> => {
     const displayName = name || "there";
 
     const emailResponse = await resend.emails.send({
-      from: "Slim and Smart <onboarding@resend.dev>",
+      from: "Health Kinetics <noreply@healthkinetics.app>",
       to: [email],
-      subject: "Welcome to Slim and Smart! 🎉",
+      subject: "Welcome to Health Kinetics! 🎉",
       html: `
         <!DOCTYPE html>
         <html>
@@ -45,7 +45,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
               <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                 <h1 style="color: #2563eb; font-size: 28px; margin: 0 0 20px 0; text-align: center;">
-                  Welcome to Slim and Smart! 💪
+                  Welcome to Health Kinetics! 💪
                 </h1>
                 
                 <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
@@ -57,7 +57,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </p>
                 
                 <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-                  Here's what you can do with Slim and Smart:
+                  Here's what you can do with Health Kinetics:
                 </p>
                 
                 <ul style="color: #374151; font-size: 16px; line-height: 1.8; margin: 0 0 24px 0; padding-left: 24px;">
@@ -72,7 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </p>
                 
                 <div style="text-align: center; margin: 32px 0;">
-                  <a href="${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || '#'}" 
+                  <a href="https://healthkinetics.app/auth" 
                      style="display: inline-block; background-color: #2563eb; color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
                     Get Started
                   </a>
@@ -84,7 +84,7 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               
               <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 24px;">
-                © 2026 Slim and Smart. Your partner in health and fitness.
+                © 2026 Health Kinetics. Your partner in health and fitness.
               </p>
             </div>
           </body>

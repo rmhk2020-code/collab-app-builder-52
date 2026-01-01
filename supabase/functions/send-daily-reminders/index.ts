@@ -133,7 +133,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
               </div>
               <div class="footer">
-                <p>Slim and Smart - Your Personal Fitness Companion</p>
+                <p>Health Kinetics - Your Personal Fitness Companion</p>
                 <p>Stay consistent, stay healthy! 🌟</p>
               </div>
             </div>
@@ -142,7 +142,7 @@ const handler = async (req: Request): Promise<Response> => {
         `;
 
         const emailResponse = await resend.emails.send({
-          from: "Slim and Smart <noreply@healthkinetics.app>",
+          from: "Health Kinetics <noreply@healthkinetics.app>",
           to: [email],
           subject: `💪 ${weeklyRemaining > 0 ? `${weeklyRemaining} exercises to hit your weekly goal!` : "You crushed your weekly goal! 🎉"}`,
           html: emailHtml,

@@ -87,6 +87,27 @@ const Auth = () => {
       return;
     }
 
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Password validation for signup
+    if (isSignUp && password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -95,7 +116,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/onboarding`,
+            emailRedirectTo: `${window.location.origin}/auth`,
             data: {
               name: name || undefined,
             },
@@ -109,23 +130,41 @@ const Auth = () => {
               description: "This email is already registered. Please sign in instead.",
               variant: "destructive",
             });
+            setIsSignUp(false);
           } else {
             throw error;
           }
-        } else {
-          // Send welcome email (don't block signup flow)
-          supabase.functions.invoke("send-welcome-email", {
-            body: { email, name: name || undefined },
-          }).catch((emailError) => {
-            console.error("Failed to send welcome email:", emailError);
-          });
+        } else if (signUpData.user) {
+          // Check if account already exists (identities will be empty)
+          if (signUpData.user.identities && signUpData.user.identities.length === 0) {
+            toast({
+              title: "Account exists",
+              description: "This email is already registered. Please sign in instead.",
+              variant: "destructive",
+            });
+            setIsSignUp(false);
+          } else if (!signUpData.session) {
+            // New signup but email confirmation required
+            toast({
+              title: "Check your email",
+              description: "We've sent you a confirmation link. Please check your email to verify your account.",
+            });
+          } else {
+            // New signup with active session - proceed
+            // Send welcome email (don't block signup flow)
+            supabase.functions.invoke("send-welcome-email", {
+              body: { email, name: name || undefined },
+            }).catch((emailError) => {
+              console.error("Failed to send welcome email:", emailError);
+            });
 
-          toast({
-            title: "Account created!",
-            description: "Check your email for a welcome message, and let's set up your fitness plan.",
-          });
-          setIsGuest(false);
-          navigate("/onboarding");
+            toast({
+              title: "Account created!",
+              description: "Welcome to Health Kinetics! Let's set up your fitness plan.",
+            });
+            setIsGuest(false);
+            navigate("/onboarding");
+          }
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -138,6 +177,12 @@ const Auth = () => {
             toast({
               title: "Invalid credentials",
               description: "Email or password is incorrect. Please try again.",
+              variant: "destructive",
+            });
+          } else if (error.message.includes("Email not confirmed")) {
+            toast({
+              title: "Email not confirmed",
+              description: "Please check your email and click the confirmation link before signing in.",
               variant: "destructive",
             });
           } else {
