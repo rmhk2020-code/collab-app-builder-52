@@ -50,8 +50,10 @@ interface FitnessPlanContextType {
   hasCompletedOnboarding: boolean;
   setHasCompletedOnboarding: (completed: boolean) => void;
   foodLogs: FoodLog[];
+  setFoodLogs: (logs: FoodLog[]) => void;
   addFoodLog: (food: Omit<FoodLog, "id" | "timestamp">) => void;
   exerciseLogs: ExerciseLog[];
+  setExerciseLogs: (logs: ExerciseLog[]) => void;
   addExerciseLog: (exercise: Omit<ExerciseLog, "id" | "timestamp">) => void;
 }
 
@@ -143,8 +145,10 @@ export const FitnessPlanProvider = ({ children }: { children: ReactNode }) => {
         hasCompletedOnboarding,
         setHasCompletedOnboarding,
         foodLogs,
+        setFoodLogs,
         addFoodLog,
         exerciseLogs,
+        setExerciseLogs,
         addExerciseLog,
       }}
     >
