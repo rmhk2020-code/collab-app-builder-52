@@ -2,12 +2,21 @@ import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Target, Zap, TrendingUp, Calendar, Clock, Dumbbell } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Target, Zap, TrendingUp, Calendar, Clock, Dumbbell, CheckCircle, Flame, Apple } from "lucide-react";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import AppHeader from "@/components/layout/AppHeader";
 
 const Home = () => {
-  const { fitnessPlan } = useFitnessPlan();
+  const { 
+    fitnessPlan,
+    exercisesCompletedToday,
+    exercisesCompletedThisWeek,
+    weeklyExerciseGoal,
+    caloriesEaten,
+    dailyCalorieGoal,
+    isGuest
+  } = useFitnessPlan();
   const [searchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState<string>("fitness-goal");
 
@@ -18,6 +27,15 @@ const Home = () => {
       setActiveSection(section);
     }
   }, [searchParams]);
+
+  const dailyExerciseGoal = 1;
+  const dailyExerciseProgress = Math.min((exercisesCompletedToday / dailyExerciseGoal) * 100, 100);
+  const weeklyExerciseProgress = Math.min((exercisesCompletedThisWeek / weeklyExerciseGoal) * 100, 100);
+  const calorieProgress = Math.min((caloriesEaten / dailyCalorieGoal) * 100, 100);
+
+  const exercisesRemainingToday = Math.max(dailyExerciseGoal - exercisesCompletedToday, 0);
+  const exercisesRemainingWeek = Math.max(weeklyExerciseGoal - exercisesCompletedThisWeek, 0);
+  const caloriesRemaining = Math.max(dailyCalorieGoal - caloriesEaten, 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -36,6 +54,130 @@ const Home = () => {
                 Let's crush your fitness goals today
               </p>
             </div>
+
+            {/* Progress Tracking Section */}
+            {!isGuest && (
+              <div className="mb-8 space-y-4">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  Today's Progress
+                </h3>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Exercise Progress Card */}
+                  <Card className="bg-card border-border">
+                    <CardContent className="pt-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Dumbbell className="h-5 w-5 text-amber-500" />
+                          <span className="font-medium text-foreground">Exercise</span>
+                        </div>
+                        <Link to="/exercises">
+                          <Button variant="ghost" size="sm" className="text-xs min-h-[32px]">
+                            View Details
+                          </Button>
+                        </Link>
+                      </div>
+                      
+                      {/* Daily Exercise */}
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground flex items-center gap-1">
+                            <CheckCircle className={`h-4 w-4 ${dailyExerciseProgress >= 100 ? 'text-emerald-500' : 'text-muted-foreground'}`} />
+                            Today
+                          </span>
+                          <span className="font-medium">
+                            {exercisesCompletedToday}/{dailyExerciseGoal} workout
+                          </span>
+                        </div>
+                        <Progress value={dailyExerciseProgress} className="h-2" />
+                        <p className="text-xs text-muted-foreground">
+                          {exercisesRemainingToday > 0 
+                            ? `${exercisesRemainingToday} workout remaining today` 
+                            : "✓ Daily goal completed!"
+                          }
+                        </p>
+                      </div>
+
+                      {/* Weekly Exercise */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground flex items-center gap-1">
+                            <Calendar className={`h-4 w-4 ${weeklyExerciseProgress >= 100 ? 'text-emerald-500' : 'text-muted-foreground'}`} />
+                            This Week
+                          </span>
+                          <span className="font-medium">
+                            {exercisesCompletedThisWeek}/{weeklyExerciseGoal} workouts
+                          </span>
+                        </div>
+                        <Progress value={weeklyExerciseProgress} className="h-2" />
+                        <p className="text-xs text-muted-foreground">
+                          {exercisesRemainingWeek > 0 
+                            ? `${exercisesRemainingWeek} workouts remaining this week` 
+                            : "✓ Weekly goal completed!"
+                          }
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Nutrition Progress Card */}
+                  <Card className="bg-card border-border">
+                    <CardContent className="pt-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Apple className="h-5 w-5 text-emerald-500" />
+                          <span className="font-medium text-foreground">Nutrition</span>
+                        </div>
+                        <Link to="/nutrition">
+                          <Button variant="ghost" size="sm" className="text-xs min-h-[32px]">
+                            View Details
+                          </Button>
+                        </Link>
+                      </div>
+                      
+                      {/* Calorie Progress */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground flex items-center gap-1">
+                            <Flame className={`h-4 w-4 ${calorieProgress >= 100 ? 'text-orange-500' : 'text-muted-foreground'}`} />
+                            Calories Today
+                          </span>
+                          <span className="font-medium">
+                            {caloriesEaten}/{dailyCalorieGoal} kcal
+                          </span>
+                        </div>
+                        <Progress value={calorieProgress} className="h-3" />
+                        <p className="text-xs text-muted-foreground">
+                          {caloriesRemaining > 0 
+                            ? `${caloriesRemaining} kcal remaining to reach your goal` 
+                            : "✓ Daily calorie goal reached!"
+                          }
+                        </p>
+                      </div>
+
+                      {/* Macro Summary */}
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <p className="text-sm text-muted-foreground">
+                          Track your meals to stay on target with your nutrition goals.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {/* Guest Banner */}
+            {isGuest && (
+              <Card className="bg-amber-500/10 border-amber-500/20 mb-6">
+                <CardContent className="py-4">
+                  <p className="text-sm text-amber-600 dark:text-amber-400 text-center">
+                    You're in guest mode. <Link to="/" className="underline font-medium">Sign in</Link> to track your progress and save your data!
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 rounded-full bg-primary/20">
