@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Heart, Dumbbell, Zap, Eye, Bone, Shield, Leaf, Sparkles, Scale, Flame, Moon } from "lucide-react";
+import { Brain, Heart, Dumbbell, Zap, Eye, Bone, Shield, Leaf, Sparkles, Scale, Flame, Moon, Star } from "lucide-react";
 import { foodCategories } from "@/data/foodData";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 
@@ -19,8 +19,24 @@ const iconMap: Record<string, React.ReactNode> = {
   Moon: <Moon className="h-5 w-5" />,
 };
 
+// Check if food is recommended based on fitness plan
+const isFoodRecommended = (categoryTitle: string, fitnessPlan: any): boolean => {
+  if (!fitnessPlan) return false;
+  const goal = fitnessPlan.goal.toLowerCase();
+  const style = fitnessPlan.workoutStyle.toLowerCase();
+  
+  if ((goal.includes("muscle") || style.includes("strength")) && categoryTitle === "Muscle Building") return true;
+  if ((goal.includes("energy") || style.includes("cardio") || style.includes("endurance")) && categoryTitle === "Energy & Endurance") return true;
+  if (goal.includes("weight") && categoryTitle === "Weight Management") return true;
+  if ((goal.includes("recovery") || goal.includes("sleep")) && categoryTitle === "Recovery & Sleep") return true;
+  if (goal.includes("heart") && categoryTitle === "Heart Health") return true;
+  if (style.includes("flex") && categoryTitle === "Anti-Inflammatory") return true;
+  
+  return false;
+};
+
 export const FoodCategories = () => {
-  const { isGuest } = useFitnessPlan();
+  const { isGuest, fitnessPlan } = useFitnessPlan();
   
   // Guest users see only first category with 5 foods
   const displayCategories = isGuest 
@@ -38,19 +54,29 @@ export const FoodCategories = () => {
       </div>
       
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayCategories.map((category) => (
-          <Card key={category.title} className="border-border bg-card">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                  {iconMap[category.icon] || <Leaf className="h-5 w-5" />}
+        {displayCategories.map((category) => {
+          const recommended = isFoodRecommended(category.title, fitnessPlan);
+          return (
+            <Card key={category.title} className={`border-border bg-card ${recommended ? 'ring-2 ring-primary/50' : ''}`}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                    {iconMap[category.icon] || <Leaf className="h-5 w-5" />}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-lg text-card-foreground">{category.title}</CardTitle>
+                      {recommended && (
+                        <Badge className="bg-primary text-primary-foreground text-xs">
+                          <Star className="h-3 w-3 mr-1" />
+                          Recommended
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">{category.description}</p>
+                  </div>
                 </div>
-                <div>
-                  <CardTitle className="text-lg text-card-foreground">{category.title}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{category.description}</p>
-                </div>
-              </div>
-            </CardHeader>
+              </CardHeader>
             <CardContent className="pt-0">
               <div className="space-y-3">
                 {category.foods.map((food) => (
@@ -91,8 +117,12 @@ export const FoodCategories = () => {
               </div>
             </CardContent>
           </Card>
-        ))}
+          );
+        })}
       </div>
+    </div>
+  );
+};
     </div>
   );
 };
