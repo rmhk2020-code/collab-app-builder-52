@@ -66,7 +66,7 @@ const Settings = () => {
     setPrivacySettings,
   } = useSettings();
 
-  const { setFitnessPlan } = useFitnessPlan();
+  const { setFitnessPlan, setHasCompletedOnboarding } = useFitnessPlan();
   const [activeTab, setActiveTab] = useState("account");
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -107,6 +107,7 @@ const Settings = () => {
 
   const handleResetPlan = () => {
     setFitnessPlan(null);
+    setHasCompletedOnboarding(false);
     toast({
       title: "Fitness Plan Reset",
       description: "Your fitness plan has been cleared. Complete onboarding to generate a new one.",
