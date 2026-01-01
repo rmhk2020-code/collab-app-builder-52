@@ -31,7 +31,6 @@ import {
   RefreshCw,
   Moon,
   Sun,
-  Monitor,
   Volume2,
   VolumeX,
   Smartphone,
