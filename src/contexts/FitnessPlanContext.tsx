@@ -47,6 +47,8 @@ interface FitnessPlanContextType {
   setMonthlyExerciseGoal: (goal: number) => void;
   isGuest: boolean;
   setIsGuest: (isGuest: boolean) => void;
+  hasCompletedOnboarding: boolean;
+  setHasCompletedOnboarding: (completed: boolean) => void;
   foodLogs: FoodLog[];
   addFoodLog: (food: Omit<FoodLog, "id" | "timestamp">) => void;
   exerciseLogs: ExerciseLog[];
@@ -66,6 +68,7 @@ export const FitnessPlanProvider = ({ children }: { children: ReactNode }) => {
   const [weeklyExerciseGoal, setWeeklyExerciseGoal] = useState(5);
   const [monthlyExerciseGoal, setMonthlyExerciseGoal] = useState(20);
   const [isGuest, setIsGuest] = useState(false);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [foodLogs, setFoodLogs] = useState<FoodLog[]>([]);
   const [exerciseLogs, setExerciseLogs] = useState<ExerciseLog[]>([]);
 
@@ -114,6 +117,8 @@ export const FitnessPlanProvider = ({ children }: { children: ReactNode }) => {
         setMonthlyExerciseGoal,
         isGuest,
         setIsGuest,
+        hasCompletedOnboarding,
+        setHasCompletedOnboarding,
         foodLogs,
         addFoodLog,
         exerciseLogs,

@@ -10,7 +10,7 @@ import healthKineticsLogo from "@/assets/health-kinetics-logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { setIsGuest } = useFitnessPlan();
+  const { setIsGuest, fitnessPlan } = useFitnessPlan();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,22 +19,46 @@ const Auth = () => {
   const handleEmailAuth = (e: React.FormEvent) => {
     e.preventDefault();
     setIsGuest(false);
-    navigate("/home");
+    
+    // Existing users with a fitness plan go directly to home
+    // New users go to onboarding
+    if (isSignUp) {
+      // New user - go to onboarding
+      navigate("/onboarding");
+    } else {
+      // Existing user - check if they have a plan
+      if (fitnessPlan) {
+        navigate("/home");
+      } else {
+        // No plan yet, show onboarding
+        navigate("/onboarding");
+      }
+    }
   };
 
   const handleGoogleLogin = () => {
     setIsGuest(false);
-    navigate("/home");
+    // Check if existing user has a plan
+    if (fitnessPlan) {
+      navigate("/home");
+    } else {
+      navigate("/onboarding");
+    }
   };
 
   const handleAppleLogin = () => {
     setIsGuest(false);
-    navigate("/home");
+    // Check if existing user has a plan
+    if (fitnessPlan) {
+      navigate("/home");
+    } else {
+      navigate("/onboarding");
+    }
   };
 
   const handleGuestContinue = () => {
     setIsGuest(true);
-    navigate("/home");
+    navigate("/onboarding");
   };
 
   return (
@@ -45,11 +69,11 @@ const Auth = () => {
             <img 
               src={healthKineticsLogo} 
               alt="Health Kinetics" 
-              className="h-20 object-contain"
+              className="h-24 object-contain"
             />
           </div>
           <CardTitle className="text-2xl font-semibold">
-            {isSignUp ? "Create Your Account" : "Welcome Back"}
+            {isSignUp ? "Create Your Account" : "Welcome to Health Kinetics"}
           </CardTitle>
           <CardDescription>
             {isSignUp 
@@ -114,7 +138,7 @@ const Auth = () => {
                   placeholder="Your name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 min-h-[44px]"
                 />
               </div>
             )}
@@ -125,7 +149,7 @@ const Auth = () => {
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
+                className="pl-10 min-h-[44px]"
               />
             </div>
             <div className="relative">
@@ -135,7 +159,7 @@ const Auth = () => {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10"
+                className="pl-10 min-h-[44px]"
               />
             </div>
             <Button type="submit" className="w-full min-h-[48px] py-3 text-base active:scale-[0.98] transition-transform">

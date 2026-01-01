@@ -104,7 +104,7 @@ const Onboarding = () => {
   };
 
   const handleFinish = () => {
-    navigate("/auth");
+    navigate("/home");
   };
 
   return (
