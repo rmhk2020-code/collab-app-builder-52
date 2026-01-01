@@ -9,6 +9,17 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Settings Icon Header */}
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
+        <div className="container mx-auto max-w-6xl px-4 py-3 flex justify-end">
+          <Link to="/settings">
+            <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
+              <Settings className="h-5 w-5" />
+            </Button>
+          </Link>
+        </div>
+      </header>
+
       {/* Goal Summary Section - Only shown if user has a plan */}
       {fitnessPlan && (
         <section className="bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 py-6 px-4 border-b border-border">
@@ -143,7 +154,7 @@ const Home = () => {
             for athletes of all levels
           </p>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {/* Exercise Library Card */}
             <Card className="group hover:shadow-lg transition-all duration-300 border-border bg-card overflow-hidden">
               <CardHeader className="pb-4">
@@ -192,33 +203,13 @@ const Home = () => {
                 </div>
                 <CardTitle className="text-xl text-card-foreground">Health</CardTitle>
                 <CardDescription className="text-muted-foreground text-sm">
-                  Track weight, BP, vitals
+                  Track weight, BP, vitals, etc.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Link to="/health">
                   <Button className="w-full min-h-[44px]" size="lg" variant="outline">
                     Track
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Settings Card */}
-            <Card className="group hover:shadow-lg transition-all duration-300 border-border bg-card overflow-hidden">
-              <CardHeader className="pb-4">
-                <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-3 group-hover:bg-muted/80 transition-colors">
-                  <Settings className="h-7 w-7 text-muted-foreground" />
-                </div>
-                <CardTitle className="text-xl text-card-foreground">Settings</CardTitle>
-                <CardDescription className="text-muted-foreground text-sm">
-                  Customize your experience
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link to="/settings">
-                  <Button className="w-full min-h-[44px]" size="lg" variant="outline">
-                    Configure
                   </Button>
                 </Link>
               </CardContent>
