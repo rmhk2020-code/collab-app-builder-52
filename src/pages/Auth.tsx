@@ -267,11 +267,12 @@ const Auth = () => {
         
         <div className="relative z-10 max-w-xl">
           {/* Logo */}
-          <div className="mb-8">
+          <div className="mb-10">
             <img 
               src={healthKineticsLogo} 
               alt="Health Kinetics" 
-              className="h-16 object-contain"
+              className="h-20 xl:h-24 object-contain drop-shadow-lg"
+              style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.3))' }}
             />
           </div>
 
@@ -341,11 +342,12 @@ const Auth = () => {
       <div className="w-full lg:w-1/2 xl:w-2/5 flex items-center justify-center px-6 py-12 bg-zinc-900/50 backdrop-blur-sm">
         <div className="w-full max-w-md space-y-8">
           {/* Mobile Logo */}
-          <div className="lg:hidden flex justify-center mb-6">
+          <div className="lg:hidden flex justify-center mb-8">
             <img 
               src={healthKineticsLogo} 
               alt="Health Kinetics" 
-              className="h-20 object-contain"
+              className="h-28 object-contain drop-shadow-lg"
+              style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.3))' }}
             />
           </div>
 
