@@ -3,12 +3,28 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, ArrowLeft, Loader2, Lock, KeyRound } from "lucide-react";
+import { Mail, ArrowLeft, Loader2, Lock, KeyRound, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import healthKineticsLogo from "@/assets/health-kinetics-logo.png";
 
 type Step = "email" | "code" | "newPassword" | "success";
+
+// Password validation helper
+const validatePassword = (password: string) => {
+  return {
+    minLength: password.length >= 8,
+    hasUppercase: /[A-Z]/.test(password),
+    hasLowercase: /[a-z]/.test(password),
+    hasNumber: /[0-9]/.test(password),
+    hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+  };
+};
+
+const isPasswordValid = (password: string) => {
+  const validation = validatePassword(password);
+  return Object.values(validation).every(Boolean);
+};
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -18,7 +34,6 @@ const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [generatedCode, setGeneratedCode] = useState<string>("");
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,28 +57,18 @@ const ResetPassword = () => {
 
       if (error) throw error;
 
-      if (data?.error) {
-        toast({
-          title: "Error",
-          description: data.error,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Store the code for verification (in production, this would be handled server-side)
-      setGeneratedCode(data.code);
+      // Always proceed to code step - the server returns same message for security
       setStep("code");
       toast({
-        title: "Code sent!",
-        description: "Check your email for the password reset code.",
+        title: "Check your email",
+        description: "If an account exists with this email, a reset code has been sent.",
       });
     } catch (error: any) {
       toast({
-        title: "Failed to send code",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
+        title: "Request sent",
+        description: "If an account exists with this email, a reset code has been sent.",
       });
+      setStep("code");
     } finally {
       setIsLoading(false);
     }
@@ -72,24 +77,16 @@ const ResetPassword = () => {
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!code) {
+    if (!code || code.length !== 6) {
       toast({
         title: "Code required",
-        description: "Please enter the verification code.",
+        description: "Please enter the 6-digit verification code.",
         variant: "destructive",
       });
       return;
     }
 
-    if (code !== generatedCode) {
-      toast({
-        title: "Invalid code",
-        description: "The code you entered is incorrect. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    // Move to password step - actual verification happens on submit
     setStep("newPassword");
   };
 
@@ -114,10 +111,10 @@ const ResetPassword = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
+    if (!isPasswordValid(newPassword)) {
       toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters.",
+        title: "Password too weak",
+        description: "Please ensure your password meets all requirements.",
         variant: "destructive",
       });
       return;
@@ -128,7 +125,7 @@ const ResetPassword = () => {
     try {
       // Update password using Supabase edge function
       const { data, error } = await supabase.functions.invoke("update-password", {
-        body: { email, newPassword, code: generatedCode },
+        body: { email, newPassword, code },
       });
 
       if (error) throw error;
@@ -157,6 +154,15 @@ const ResetPassword = () => {
       setIsLoading(false);
     }
   };
+
+  const passwordValidation = validatePassword(newPassword);
+
+  const PasswordRequirement = ({ met, text }: { met: boolean; text: string }) => (
+    <div className={`flex items-center gap-2 text-sm ${met ? 'text-green-500' : 'text-muted-foreground'}`}>
+      {met ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
+      <span>{text}</span>
+    </div>
+  );
 
   const renderStep = () => {
     switch (step) {
@@ -200,7 +206,7 @@ const ResetPassword = () => {
                 type="text"
                 placeholder="Enter 6-digit code"
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 className="pl-10 min-h-[44px] text-center text-lg tracking-widest"
                 maxLength={6}
                 disabled={isLoading}
@@ -212,7 +218,7 @@ const ResetPassword = () => {
             <Button
               type="submit"
               className="w-full min-h-[48px] py-3 text-base"
-              disabled={isLoading}
+              disabled={isLoading || code.length !== 6}
             >
               Verify Code
             </Button>
@@ -242,6 +248,18 @@ const ResetPassword = () => {
                 disabled={isLoading}
               />
             </div>
+            
+            {newPassword && (
+              <div className="bg-muted/50 rounded-lg p-3 space-y-1">
+                <p className="text-xs font-medium text-muted-foreground mb-2">Password requirements:</p>
+                <PasswordRequirement met={passwordValidation.minLength} text="At least 8 characters" />
+                <PasswordRequirement met={passwordValidation.hasUppercase} text="One uppercase letter" />
+                <PasswordRequirement met={passwordValidation.hasLowercase} text="One lowercase letter" />
+                <PasswordRequirement met={passwordValidation.hasNumber} text="One number" />
+                <PasswordRequirement met={passwordValidation.hasSpecial} text="One special character" />
+              </div>
+            )}
+
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -253,10 +271,15 @@ const ResetPassword = () => {
                 disabled={isLoading}
               />
             </div>
+
+            {confirmPassword && newPassword !== confirmPassword && (
+              <p className="text-sm text-destructive">Passwords do not match</p>
+            )}
+
             <Button
               type="submit"
               className="w-full min-h-[48px] py-3 text-base"
-              disabled={isLoading}
+              disabled={isLoading || !isPasswordValid(newPassword) || newPassword !== confirmPassword}
             >
               {isLoading ? (
                 <>
@@ -310,7 +333,7 @@ const ResetPassword = () => {
       case "code":
         return "We sent a 6-digit code to your email";
       case "newPassword":
-        return "Choose a new password for your account";
+        return "Choose a strong password for your account";
       case "success":
         return "You can now sign in with your new password";
     }
