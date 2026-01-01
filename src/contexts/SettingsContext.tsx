@@ -245,7 +245,18 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     if (settings.dietSettings) setDietSettings(settings.dietSettings);
     if (settings.trackingSettings) setTrackingSettings(settings.trackingSettings);
     if (settings.notificationSettings) setNotificationSettings(settings.notificationSettings);
-    if (settings.appPreferences) setAppPreferences(settings.appPreferences);
+    
+    // For appPreferences, prioritize localStorage theme over database settings
+    if (settings.appPreferences) {
+      const localTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+      const mergedPrefs = {
+        ...settings.appPreferences,
+        // Keep local theme if it exists, otherwise use database value
+        theme: localTheme || settings.appPreferences.theme || "dark",
+      };
+      setAppPreferences(mergedPrefs);
+    }
+    
     if (settings.privacySettings) setPrivacySettings(settings.privacySettings);
   };
 

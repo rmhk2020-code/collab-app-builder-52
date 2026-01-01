@@ -28,11 +28,26 @@ const Auth = () => {
     return profile?.fitness_plan !== null && profile?.fitness_plan !== undefined;
   };
 
+  const checkIfNeedsPassword = (user: any): boolean => {
+    // Check if user signed up via OAuth and might not have a password
+    const provider = user.app_metadata?.provider;
+    const providers = user.app_metadata?.providers || [];
+    
+    // If signed in via OAuth (not email), they might need to set a password
+    return provider !== "email" && !providers.includes("email");
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setIsGuest(false);
         setTimeout(() => {
+          // Check if OAuth user needs to set password
+          if (event === "SIGNED_IN" && checkIfNeedsPassword(session.user)) {
+            navigate("/set-password");
+            return;
+          }
+          
           checkUserOnboardingStatus(session.user.id).then((hasCompletedOnboardingInDB) => {
             if (hasCompletedOnboardingInDB) {
               navigate("/home");

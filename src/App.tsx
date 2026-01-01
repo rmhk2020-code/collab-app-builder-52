@@ -9,6 +9,7 @@ import { HealthVitalsProvider } from "@/contexts/HealthVitalsContext";
 import Onboarding from "./pages/Onboarding";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
+import SetPassword from "./pages/SetPassword";
 import Home from "./pages/Home";
 import Exercises from "./pages/Exercises";
 import Nutrition from "./pages/Nutrition";
@@ -30,6 +31,7 @@ const App = () => (
                 <Route path="/" element={<Auth />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/set-password" element={<SetPassword />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/exercises" element={<Exercises />} />
