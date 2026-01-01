@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Mail, Lock, User } from "lucide-react";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
+import healthKineticsLogo from "@/assets/health-kinetics-logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -40,6 +41,13 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center px-6 py-12 bg-background animate-fade-in">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <img 
+              src={healthKineticsLogo} 
+              alt="Health Kinetics" 
+              className="h-20 object-contain"
+            />
+          </div>
           <CardTitle className="text-2xl font-semibold">
             {isSignUp ? "Create Your Account" : "Welcome Back"}
           </CardTitle>

@@ -3,13 +3,14 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dumbbell, Apple, Target, Zap, Activity, Settings, Menu } from "lucide-react";
+import healthKineticsLogo from "@/assets/health-kinetics-logo.png";
 
 interface AppHeaderProps {
   title?: string;
   showTitle?: boolean;
 }
 
-const AppHeader = ({ title = "Slim & Smart", showTitle = true }: AppHeaderProps) => {
+const AppHeader = ({ title, showTitle = true }: AppHeaderProps) => {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   return (
@@ -23,7 +24,14 @@ const AppHeader = ({ title = "Slim & Smart", showTitle = true }: AppHeaderProps)
           </SheetTrigger>
           <SheetContent side="left" className="w-72">
             <SheetHeader>
-              <SheetTitle className="text-left">Menu</SheetTitle>
+              <div className="flex items-center gap-3">
+                <img 
+                  src={healthKineticsLogo} 
+                  alt="Health Kinetics Logo" 
+                  className="w-12 h-12 object-contain"
+                />
+                <SheetTitle className="text-left">Menu</SheetTitle>
+              </div>
             </SheetHeader>
             <nav className="mt-6 flex flex-col gap-2">
               <Link to="/home" onClick={() => setSheetOpen(false)}>
@@ -61,7 +69,15 @@ const AppHeader = ({ title = "Slim & Smart", showTitle = true }: AppHeaderProps)
         </Sheet>
 
         {showTitle && (
-          <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+          title ? (
+            <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+          ) : (
+            <img 
+              src={healthKineticsLogo} 
+              alt="Health Kinetics" 
+              className="h-10 object-contain"
+            />
+          )
         )}
 
         <Link to="/settings">
