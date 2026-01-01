@@ -1252,13 +1252,12 @@ const Settings = () => {
                     {[
                       { value: "light", icon: Sun, label: "Light" },
                       { value: "dark", icon: Moon, label: "Dark" },
-                      { value: "system", icon: Monitor, label: "System" },
                     ].map((theme) => (
                       <Button
                         key={theme.value}
                         variant={appPreferences.theme === theme.value ? "default" : "outline"}
                         className="flex-1 gap-2 min-h-[44px]"
-                        onClick={() => setAppPreferences({ ...appPreferences, theme: theme.value as any })}
+                        onClick={() => setAppPreferences({ ...appPreferences, theme: theme.value as "light" | "dark" })}
                       >
                         <theme.icon className="h-4 w-4" />
                         {theme.label}
