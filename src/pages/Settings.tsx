@@ -96,15 +96,34 @@ const Settings = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
+  // Auth check and get user info
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserEmail(user.email ?? null);
+    const checkAuthAndGetUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+      
+      if (session.user) {
+        setUserEmail(session.user.email ?? null);
       }
     };
-    getUser();
-  }, []);
+    
+    checkAuthAndGetUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate("/auth");
+      } else if (session?.user) {
+        setUserEmail(session.user.email ?? null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   // Password change handlers
   const handleSendVerificationCode = async () => {
@@ -316,19 +335,35 @@ const Settings = () => {
   };
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Sign out error:", error);
+        toast({
+          title: "Error",
+          description: "Failed to sign out. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        // Clear local storage
+        localStorage.removeItem("fitnessPlan");
+        localStorage.removeItem("hasCompletedOnboarding");
+        localStorage.removeItem("userMood");
+        localStorage.removeItem("quoteIndex");
+        
+        toast({
+          title: "Signed Out",
+          description: "You have been signed out successfully.",
+        });
+        navigate("/auth");
+      }
+    } catch (error) {
+      console.error("Sign out error:", error);
       toast({
         title: "Error",
         description: "Failed to sign out. Please try again.",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Signed Out",
-        description: "You have been signed out successfully.",
-      });
-      navigate("/");
     }
   };
 
