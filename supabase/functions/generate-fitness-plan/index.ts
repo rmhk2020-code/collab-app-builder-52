@@ -11,11 +11,30 @@ serve(async (req) => {
   }
 
   try {
-    const { answers, questions } = await req.json();
+    const { answers, questions, feedback } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    // Check if all questions were skipped
+    const allSkipped = questions.every((_: string, i: number) => !answers[i] || answers[i] === null);
+    
+    if (allSkipped && !feedback) {
+      // Return a general fitness plan for users who skipped all questions
+      console.log("All questions skipped - returning general fitness plan");
+      const generalPlan = {
+        goal: "Build a sustainable fitness routine that improves overall health, energy levels, and well-being",
+        weeklyPlan: "Start with 3 workout days per week (e.g., Monday, Wednesday, Friday) with rest days in between. This balanced approach allows for proper recovery while building consistency.",
+        workoutStyle: "A balanced mix of cardio (walking, cycling, or swimming), strength training (bodyweight exercises or light weights), and flexibility work (stretching or yoga). This well-rounded approach ensures overall fitness development.",
+        stayingConsistent: "Start small with just 15-20 minute sessions, schedule workouts like appointments, find activities you enjoy, celebrate small wins, and remember that any movement is better than no movement. Build habits gradually.",
+        duration: "Begin with 20-30 minute sessions and gradually increase to 45-60 minutes as your fitness improves",
+        progression: "Week 1-2: Focus on building the habit with light, enjoyable movement. Week 3-4: Gradually increase duration and intensity. Listen to your body and adjust as needed.",
+      };
+      return new Response(JSON.stringify({ plan: generalPlan }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Build the user context from answers
@@ -25,6 +44,11 @@ serve(async (req) => {
         return `${q}\nAnswer: ${answer || "Skipped"}`;
       })
       .join("\n\n");
+
+    let feedbackContext = "";
+    if (feedback) {
+      feedbackContext = `\n\nUser feedback on previous plan: ${feedback}\n\nPlease adjust the plan according to this feedback.`;
+    }
 
     const systemPrompt = `You are a supportive, encouraging fitness coach creating personalized fitness plans. 
 Your tone should be friendly, calm, and motivating - never shaming or using extreme fitness language.
@@ -36,12 +60,13 @@ Important guidelines:
 - Keep language age-appropriate and positive
 - Make the user feel understood and supported
 - Create realistic, achievable plans
+- Include specific workout types that match their goals (e.g., "strength training", "cardio", "HIIT", "yoga", "swimming")
 
 Respond with a JSON object containing these exact fields:
 {
   "goal": "A personalized statement of their primary fitness goal",
   "weeklyPlan": "Specific weekly workout frequency and structure based on their availability",
-  "workoutStyle": "Recommended workout types based on their preferences and goals",
+  "workoutStyle": "Recommended workout types based on their preferences and goals (be specific: mention types like strength, cardio, flexibility, etc.)",
   "stayingConsistent": "Personalized tips for overcoming their specific consistency challenges",
   "duration": "Recommended session duration based on their time availability",
   "progression": "A 4-week progression plan that's beginner-friendly"
@@ -59,7 +84,7 @@ Respond with a JSON object containing these exact fields:
           { role: "system", content: systemPrompt },
           {
             role: "user",
-            content: `Based on the following user responses, create a personalized fitness plan:\n\n${userContext}`,
+            content: `Based on the following user responses, create a personalized fitness plan:\n\n${userContext}${feedbackContext}`,
           },
         ],
       }),
@@ -68,6 +93,18 @@ Respond with a JSON object containing these exact fields:
     if (!response.ok) {
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "Payment required. Please add funds." }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
@@ -81,7 +118,6 @@ Respond with a JSON object containing these exact fields:
     // Parse the JSON from the response
     let plan;
     try {
-      // Try to extract JSON from the response
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         plan = JSON.parse(jsonMatch[0]);
@@ -90,7 +126,6 @@ Respond with a JSON object containing these exact fields:
       }
     } catch (parseError) {
       console.error("Failed to parse AI response:", parseError);
-      // Create a fallback based on user's first answer
       plan = {
         goal: answers[0] || "Improve overall fitness and well-being",
         weeklyPlan: "Start with 3 workout days per week, with rest days in between for recovery.",

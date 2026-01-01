@@ -12,9 +12,11 @@ import {
   Trophy,
   AlertTriangle,
   Lightbulb,
-  Flame
+  Flame,
+  Star
 } from 'lucide-react';
 import { useState } from 'react';
+import { useFitnessPlan } from '@/contexts/FitnessPlanContext';
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -22,6 +24,17 @@ interface ExerciseCardProps {
 
 export const ExerciseCard = ({ exercise }: ExerciseCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { fitnessPlan } = useFitnessPlan();
+
+  // Check if exercise matches user's fitness plan
+  const isRecommended = fitnessPlan ? (
+    fitnessPlan.workoutStyle.toLowerCase().includes(exercise.type.toLowerCase()) ||
+    fitnessPlan.workoutStyle.toLowerCase().includes(exercise.category.toLowerCase()) ||
+    (fitnessPlan.goal.toLowerCase().includes("strength") && exercise.category === "strength") ||
+    (fitnessPlan.goal.toLowerCase().includes("cardio") && exercise.category === "cardio") ||
+    (fitnessPlan.goal.toLowerCase().includes("flex") && exercise.category === "flexibility") ||
+    (fitnessPlan.goal.toLowerCase().includes("weight") && exercise.type === "compound")
+  ) : false;
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -42,11 +55,19 @@ export const ExerciseCard = ({ exercise }: ExerciseCardProps) => {
   };
 
   return (
-    <Card className="w-full hover:shadow-lg transition-shadow">
+    <Card className={`w-full hover:shadow-lg transition-shadow ${isRecommended ? 'ring-2 ring-primary/50' : ''}`}>
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-xl capitalize">{exercise.name}</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-xl capitalize">{exercise.name}</CardTitle>
+              {isRecommended && (
+                <Badge className="bg-primary text-primary-foreground text-xs">
+                  <Star className="h-3 w-3 mr-1" />
+                  Recommended
+                </Badge>
+              )}
+            </div>
             <CardDescription className="mt-2">{exercise.description}</CardDescription>
           </div>
           <div className="flex flex-col gap-2 ml-4">

@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.generate-fitness-plan]
 verify_jwt = false
+
+[functions.seed-exercises]
+verify_jwt = false
