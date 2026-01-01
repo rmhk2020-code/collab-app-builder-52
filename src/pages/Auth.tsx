@@ -12,24 +12,40 @@ import healthKineticsLogo from "@/assets/health-kinetics-logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { setIsGuest, fitnessPlan, hasCompletedOnboarding } = useFitnessPlan();
+  const { setIsGuest } = useFitnessPlan();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Check user's onboarding status from database
+  const checkUserOnboardingStatus = async (userId: string) => {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('fitness_plan')
+      .eq('user_id', userId)
+      .single();
+    
+    // If profile exists and has a fitness plan, user has completed onboarding
+    return profile?.fitness_plan !== null && profile?.fitness_plan !== undefined;
+  };
+
   // Check if user is already logged in
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setIsGuest(false);
-        // User is logged in, check if they have completed onboarding
-        if (hasCompletedOnboarding || fitnessPlan) {
-          navigate("/home");
-        } else {
-          navigate("/onboarding");
-        }
+        // Check database for onboarding status
+        setTimeout(() => {
+          checkUserOnboardingStatus(session.user.id).then((hasCompletedOnboardingInDB) => {
+            if (hasCompletedOnboardingInDB) {
+              navigate("/home");
+            } else {
+              navigate("/onboarding");
+            }
+          });
+        }, 0);
       }
     });
 
@@ -37,16 +53,18 @@ const Auth = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setIsGuest(false);
-        if (hasCompletedOnboarding || fitnessPlan) {
-          navigate("/home");
-        } else {
-          navigate("/onboarding");
-        }
+        checkUserOnboardingStatus(session.user.id).then((hasCompletedOnboardingInDB) => {
+          if (hasCompletedOnboardingInDB) {
+            navigate("/home");
+          } else {
+            navigate("/onboarding");
+          }
+        });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [fitnessPlan, hasCompletedOnboarding, navigate, setIsGuest]);
+  }, [navigate, setIsGuest]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +112,7 @@ const Auth = () => {
           navigate("/onboarding");
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
@@ -111,7 +129,9 @@ const Auth = () => {
           }
         } else {
           setIsGuest(false);
-          if (hasCompletedOnboarding || fitnessPlan) {
+          // Check database for user's onboarding status
+          const hasCompletedOnboardingInDB = await checkUserOnboardingStatus(data.user.id);
+          if (hasCompletedOnboardingInDB) {
             navigate("/home");
           } else {
             navigate("/onboarding");
