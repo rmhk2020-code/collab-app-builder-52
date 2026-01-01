@@ -8,13 +8,13 @@ import { SettingsProvider } from "@/contexts/SettingsContext";
 import { HealthVitalsProvider } from "@/contexts/HealthVitalsContext";
 import Onboarding from "./pages/Onboarding";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import Home from "./pages/Home";
 import Exercises from "./pages/Exercises";
 import Nutrition from "./pages/Nutrition";
 import Settings from "./pages/Settings";
 import Health from "./pages/Health";
 import NotFound from "./pages/NotFound";
-
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -28,6 +28,8 @@ const App = () => (
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Auth />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/exercises" element={<Exercises />} />

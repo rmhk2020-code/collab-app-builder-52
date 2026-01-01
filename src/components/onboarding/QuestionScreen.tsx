@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -19,6 +20,7 @@ const QuestionScreen = ({
   onSkip,
   onBack,
 }: QuestionScreenProps) => {
+  const navigate = useNavigate();
   const [answer, setAnswer] = useState("");
 
   const handleNext = () => {
@@ -31,6 +33,14 @@ const QuestionScreen = ({
     setAnswer("");
   };
 
+  const handleBack = () => {
+    if (questionNumber === 1) {
+      // On first question, go back to sign in
+      navigate("/auth");
+    } else {
+      onBack();
+    }
+  };
   return (
     <div 
       key={questionNumber}
@@ -74,13 +84,12 @@ const QuestionScreen = ({
         </Button>
         <div className="flex gap-3">
           <Button
-            onClick={onBack}
+            onClick={handleBack}
             variant="outline"
             size="lg"
             className="flex-1 text-lg min-h-[52px] py-4 active:scale-[0.98] transition-transform"
-            disabled={questionNumber === 1}
           >
-            Back
+            {questionNumber === 1 ? "Sign In" : "Back"}
           </Button>
           <Button
             onClick={handleSkip}

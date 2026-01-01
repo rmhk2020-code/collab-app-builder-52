@@ -152,6 +152,8 @@ const Auth = () => {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
+      // Google OAuth will automatically create account if it doesn't exist
+      // or sign in if it does exist - this is the expected OAuth behavior
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -325,6 +327,17 @@ const Auth = () => {
               )}
             </Button>
           </form>
+
+          {!isSignUp && (
+            <Button
+              variant="link"
+              className="w-full text-sm text-muted-foreground"
+              onClick={() => navigate("/reset-password")}
+              disabled={isLoading}
+            >
+              Forgot password?
+            </Button>
+          )}
 
           <Button
             variant="link"
