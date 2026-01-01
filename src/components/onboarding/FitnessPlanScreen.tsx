@@ -1,14 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target, Calendar, Dumbbell, Heart } from "lucide-react";
-import type { FitnessPlan } from "@/pages/Onboarding";
+import { Target, Calendar, Dumbbell, Heart, MessageSquare } from "lucide-react";
+import type { FitnessPlan } from "@/contexts/FitnessPlanContext";
 
 interface FitnessPlanScreenProps {
   plan: FitnessPlan;
   onFinish: () => void;
+  onFeedback: () => void;
 }
 
-const FitnessPlanScreen = ({ plan, onFinish }: FitnessPlanScreenProps) => {
+const FitnessPlanScreen = ({ plan, onFinish, onFeedback }: FitnessPlanScreenProps) => {
   const sections = [
     {
       icon: Target,
@@ -94,13 +95,24 @@ const FitnessPlanScreen = ({ plan, onFinish }: FitnessPlanScreenProps) => {
             Remember: This plan is a starting point. Listen to your body and adjust as needed. You can always update your preferences later.
           </p>
 
-          <Button
-            onClick={onFinish}
-            size="lg"
-            className="w-full text-lg py-6 transition-all duration-300 hover:scale-105"
-          >
-            Let's Get Started!
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              onClick={onFinish}
+              size="lg"
+              className="flex-1 text-lg py-6 transition-all duration-300 hover:scale-105"
+            >
+              Let's Get Started!
+            </Button>
+            <Button
+              onClick={onFeedback}
+              variant="outline"
+              size="lg"
+              className="flex-1 text-lg py-6 transition-all duration-300 hover:scale-105"
+            >
+              <MessageSquare className="h-5 w-5 mr-2" />
+              Give Feedback
+            </Button>
+          </div>
         </div>
       </div>
     </div>

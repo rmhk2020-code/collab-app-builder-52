@@ -8,6 +8,7 @@ interface QuestionScreenProps {
   totalQuestions: number;
   onNext: (answer: string) => void;
   onSkip: () => void;
+  onBack: () => void;
 }
 
 const QuestionScreen = ({
@@ -16,6 +17,7 @@ const QuestionScreen = ({
   totalQuestions,
   onNext,
   onSkip,
+  onBack,
 }: QuestionScreenProps) => {
   const [answer, setAnswer] = useState("");
 
@@ -70,14 +72,25 @@ const QuestionScreen = ({
         >
           Next
         </Button>
-        <Button
-          onClick={handleSkip}
-          variant="ghost"
-          size="lg"
-          className="w-full text-lg py-6 text-muted-foreground hover:text-foreground"
-        >
-          Skip
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            size="lg"
+            className="flex-1 text-lg py-6"
+            disabled={questionNumber === 1}
+          >
+            Back
+          </Button>
+          <Button
+            onClick={handleSkip}
+            variant="ghost"
+            size="lg"
+            className="flex-1 text-lg py-6 text-muted-foreground hover:text-foreground"
+          >
+            Skip
+          </Button>
+        </div>
       </div>
     </div>
   );
