@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Target, Zap, TrendingUp, Calendar, Clock, Dumbbell, CheckCircle, Flame, Apple, Smile, Frown, Meh, Heart, Sparkles, RefreshCw } from "lucide-react";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import { useUserData } from "@/hooks/useUserData";
+import { supabase } from "@/integrations/supabase/client";
 import AppHeader from "@/components/layout/AppHeader";
 
 const quotes = {
@@ -52,6 +53,7 @@ const quotes = {
 };
 
 const Home = () => {
+  const navigate = useNavigate();
   const { 
     fitnessPlan,
     exercisesCompletedToday,
@@ -64,6 +66,17 @@ const Home = () => {
   
   // Initialize user data sync
   useUserData();
+
+  // Auth check - redirect to login if not authenticated and not a guest
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session && !isGuest) {
+        navigate("/auth");
+      }
+    };
+    checkAuth();
+  }, [navigate, isGuest]);
   
   const [searchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState<string>("fitness-goal");
