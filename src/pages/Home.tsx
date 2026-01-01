@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Target, Zap, TrendingUp, Calendar, Clock, Dumbbell, CheckCircle, Flame, Apple } from "lucide-react";
+import { Target, Zap, TrendingUp, Calendar, Clock, Dumbbell, CheckCircle, Flame, Apple, Smile, Frown, Meh, Heart, Sparkles } from "lucide-react";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import AppHeader from "@/components/layout/AppHeader";
 
@@ -19,6 +19,7 @@ const Home = () => {
   } = useFitnessPlan();
   const [searchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState<string>("fitness-goal");
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
 
   // Handle section from URL params
   useEffect(() => {
@@ -54,6 +55,49 @@ const Home = () => {
                 Let's crush your fitness goals today
               </p>
             </div>
+
+            {/* How Are You Feeling Card */}
+            <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20 mb-6">
+              <CardContent className="py-5">
+                <div className="flex flex-col items-center text-center">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Heart className="h-5 w-5 text-primary" />
+                    <h3 className="font-medium text-foreground">How are you feeling today?</h3>
+                  </div>
+                  <div className="flex gap-3 flex-wrap justify-center">
+                    {[
+                      { mood: "great", icon: Sparkles, label: "Great!", color: "text-emerald-500" },
+                      { mood: "good", icon: Smile, label: "Good", color: "text-blue-500" },
+                      { mood: "okay", icon: Meh, label: "Okay", color: "text-amber-500" },
+                      { mood: "tired", icon: Frown, label: "Tired", color: "text-orange-500" },
+                    ].map(({ mood, icon: Icon, label, color }) => (
+                      <Button
+                        key={mood}
+                        variant={selectedMood === mood ? "default" : "outline"}
+                        size="sm"
+                        className={`min-h-[40px] gap-2 transition-all ${
+                          selectedMood === mood 
+                            ? "" 
+                            : `hover:bg-primary/10`
+                        }`}
+                        onClick={() => setSelectedMood(mood)}
+                      >
+                        <Icon className={`h-4 w-4 ${selectedMood === mood ? "" : color}`} />
+                        {label}
+                      </Button>
+                    ))}
+                  </div>
+                  {selectedMood && (
+                    <p className="text-sm text-muted-foreground mt-3 animate-fade-in">
+                      {selectedMood === "great" && "Amazing! Let's make the most of your energy today! 💪"}
+                      {selectedMood === "good" && "Wonderful! You're ready to tackle your goals! 🎯"}
+                      {selectedMood === "okay" && "That's okay! Even small steps count. You've got this! 🌟"}
+                      {selectedMood === "tired" && "Rest is important too. Listen to your body today! 💙"}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Progress Tracking Section */}
             {!isGuest && (
