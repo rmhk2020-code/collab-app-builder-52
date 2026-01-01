@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft,
   User,
@@ -41,6 +42,8 @@ import {
   HelpCircle,
   MessageSquare,
   Info,
+  LogOut,
+  Mail,
 } from "lucide-react";
 
 const Settings = () => {
@@ -65,6 +68,35 @@ const Settings = () => {
 
   const { setFitnessPlan } = useFitnessPlan();
   const [activeTab, setActiveTab] = useState("account");
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserEmail(user.email ?? null);
+      }
+    };
+    getUser();
+  }, []);
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Signed Out",
+        description: "You have been signed out successfully.",
+      });
+      navigate("/");
+    }
+  };
 
   const handleSave = () => {
     toast({
@@ -145,6 +177,21 @@ const Settings = () => {
 
           {/* Account & Profile */}
           <TabsContent value="account" className="space-y-6">
+            {/* Signed In Email Card */}
+            {userEmail && (
+              <Card className="border-primary/20 bg-primary/5">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Mail className="h-5 w-5 text-primary" />
+                    Signed In As
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-lg font-medium text-foreground">{userEmail}</p>
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -313,6 +360,27 @@ const Settings = () => {
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Logout Card */}
+            <Card className="border-destructive/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-destructive">
+                  <LogOut className="h-5 w-5" />
+                  Sign Out
+                </CardTitle>
+                <CardDescription>Sign out of your account</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  variant="destructive" 
+                  className="w-full min-h-[44px] gap-2"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
