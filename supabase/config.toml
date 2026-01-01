@@ -2,3 +2,6 @@ project_id = "kkvudqvxcjchzehrptvy"
 
 [functions.analyze-food]
 verify_jwt = false
+
+[functions.generate-fitness-plan]
+verify_jwt = false
