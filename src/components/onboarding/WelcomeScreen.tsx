@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import healthKineticsLogo from "@/assets/health-kinetics-logo.png";
 
 interface WelcomeScreenProps {
@@ -10,7 +11,13 @@ interface WelcomeScreenProps {
 const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
   const navigate = useNavigate();
 
-  const handleBack = () => {
+  const handleBack = async () => {
+    // If the user is signed in (e.g., via Google), sign out first so /auth doesn't auto-redirect.
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // ignore
+    }
     navigate("/auth");
   };
 

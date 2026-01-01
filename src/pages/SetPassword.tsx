@@ -85,9 +85,10 @@ const SetPassword = () => {
     setIsLoading(true);
 
     try {
-      // Update user's password using Supabase
+      // Update user's password and mark it as set (so we don't force this screen again)
       const { error } = await supabase.auth.updateUser({
         password: password,
+        data: { has_password: true },
       });
 
       if (error) throw error;
@@ -125,7 +126,11 @@ const SetPassword = () => {
 
   const handleBackToSignIn = async () => {
     // Sign out and go back to auth page
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // ignore
+    }
     navigate("/auth");
   };
 
