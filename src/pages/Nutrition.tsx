@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Target, Clock, Flame, Edit2, Check, X, Plus } from "lucide-react";
+import { Target, Clock, Flame, Edit2, Check, X, Plus } from "lucide-react";
 import { FoodCategories } from "@/components/nutrition/FoodCategories";
 import { FoodScanner } from "@/components/nutrition/FoodScanner";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
+import AppHeader from "@/components/layout/AppHeader";
 
 const Nutrition = () => {
   const { 
@@ -48,9 +49,11 @@ const Nutrition = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      <AppHeader title="Nutrition" />
+
       {/* Calorie Tracking Bar - Hidden for guests */}
       {!isGuest && (
-        <div className="sticky top-0 z-10 bg-card border-b border-border py-4 px-4 shadow-sm">
+        <div className="sticky top-[61px] z-10 bg-card border-b border-border py-4 px-4 shadow-sm">
           <div className="container mx-auto max-w-6xl">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -187,13 +190,6 @@ const Nutrition = () => {
       )}
 
       <div className="container mx-auto px-4 py-6">
-        <Link to="/home">
-          <Button variant="ghost" className="mb-4 min-h-[44px] px-4 active:scale-[0.98] transition-transform">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Button>
-        </Link>
-
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4">Diet & Nutrition</h1>
           <p className="text-xl text-muted-foreground">

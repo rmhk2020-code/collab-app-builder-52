@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, CheckCircle, Target, Calendar, Clock, Plus, Edit2, Check, X } from "lucide-react";
+import { CheckCircle, Target, Calendar, Clock, Plus, Edit2, Check, X } from "lucide-react";
 import { ExerciseLibrary } from "@/components/exercises/ExerciseLibrary";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
+import AppHeader from "@/components/layout/AppHeader";
 
 const Exercises = () => {
   const { 
@@ -18,9 +19,7 @@ const Exercises = () => {
     exercisesCompletedThisMonth,
     setExercisesCompletedThisMonth,
     weeklyExerciseGoal,
-    setWeeklyExerciseGoal,
     monthlyExerciseGoal,
-    setMonthlyExerciseGoal,
     isGuest
   } = useFitnessPlan();
 
@@ -59,9 +58,11 @@ const Exercises = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <AppHeader title="Exercises" />
+
       {/* Progress Tracking Bar - Hidden for guests */}
       {!isGuest && (
-        <div className="sticky top-0 z-10 bg-card border-b border-border py-4 px-4 shadow-sm">
+        <div className="sticky top-[61px] z-10 bg-card border-b border-border py-4 px-4 shadow-sm">
           <div className="container mx-auto max-w-6xl">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -229,14 +230,8 @@ const Exercises = () => {
       )}
 
       <div className="container mx-auto px-4 py-6">
-        <Link to="/home">
-          <Button variant="ghost" className="mb-4 min-h-[44px] px-4 active:scale-[0.98] transition-transform">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Button>
-        </Link>
+        <ExerciseLibrary isGuest={isGuest} />
       </div>
-      <ExerciseLibrary isGuest={isGuest} />
     </div>
   );
 };
