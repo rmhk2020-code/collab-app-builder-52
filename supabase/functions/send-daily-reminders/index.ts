@@ -142,7 +142,7 @@ const handler = async (req: Request): Promise<Response> => {
         `;
 
         const emailResponse = await resend.emails.send({
-          from: "Slim and Smart <onboarding@resend.dev>",
+          from: "Slim and Smart <noreply@healthkinetics.app>",
           to: [email],
           subject: `💪 ${weeklyRemaining > 0 ? `${weeklyRemaining} exercises to hit your weekly goal!` : "You crushed your weekly goal! 🎉"}`,
           html: emailHtml,
