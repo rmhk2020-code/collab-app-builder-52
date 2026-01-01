@@ -9,9 +9,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Store codes temporarily (in production, use Redis or database)
-const resetCodes = new Map<string, { code: string; expires: number }>();
-
 interface ResetRequest {
   email: string;
 }
@@ -26,7 +23,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const { email }: ResetRequest = await req.json();
-    console.log("Processing reset for email:", email);
+    console.log("Processing reset request");
 
     if (!email) {
       return new Response(
@@ -35,40 +32,65 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Create Supabase admin client to check if user exists
+    // Create Supabase admin client
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Check if user exists
+    // Check if user exists (but don't reveal this to the client)
     const { data: users, error: userError } = await supabaseAdmin.auth.admin.listUsers();
     
     if (userError) {
       console.error("Error checking user:", userError);
+      // Return generic success message to prevent enumeration
       return new Response(
-        JSON.stringify({ error: "Failed to verify user" }),
-        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        JSON.stringify({ success: true, message: "If an account exists with this email, a reset code has been sent." }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
     const userExists = users.users.some(u => u.email === email);
     
+    // SECURITY: Always return the same response whether user exists or not
+    // This prevents account enumeration attacks
     if (!userExists) {
-      console.log("User not found:", email);
+      console.log("User not found, returning generic message");
       return new Response(
-        JSON.stringify({ error: "No account found with this email address. Please sign up first." }),
-        { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        JSON.stringify({ success: true, message: "If an account exists with this email, a reset code has been sent." }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
     // Generate 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
 
-    // Store the code
-    resetCodes.set(email, { code, expires });
-    console.log("Generated reset code for:", email);
+    // Store the code in database for persistence across function restarts
+    // First, delete any existing codes for this email
+    await supabaseAdmin
+      .from('password_reset_codes')
+      .delete()
+      .eq('email', email);
+
+    // Insert new code
+    const { error: insertError } = await supabaseAdmin
+      .from('password_reset_codes')
+      .insert({
+        email,
+        code,
+        expires_at: expiresAt
+      });
+
+    if (insertError) {
+      console.error("Error storing reset code:", insertError);
+      return new Response(
+        JSON.stringify({ success: true, message: "If an account exists with this email, a reset code has been sent." }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    console.log("Generated reset code for user");
 
     // Send email with code
     const emailResponse = await resend.emails.send({
@@ -109,15 +131,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", emailResponse);
 
+    // SECURITY: Do not return the code in the response - only send via email
     return new Response(
-      JSON.stringify({ success: true, code, message: "Reset code sent to your email" }),
+      JSON.stringify({ success: true, message: "If an account exists with this email, a reset code has been sent." }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
     console.error("Error in send-password-reset:", error);
+    // Return generic message even on error to prevent enumeration
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      JSON.stringify({ success: true, message: "If an account exists with this email, a reset code has been sent." }),
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
 };
