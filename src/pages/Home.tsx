@@ -3,9 +3,53 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Target, Zap, TrendingUp, Calendar, Clock, Dumbbell, CheckCircle, Flame, Apple, Smile, Frown, Meh, Heart, Sparkles } from "lucide-react";
+import { Target, Zap, TrendingUp, Calendar, Clock, Dumbbell, CheckCircle, Flame, Apple, Smile, Frown, Meh, Heart, Sparkles, RefreshCw } from "lucide-react";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
+import { useUserData } from "@/hooks/useUserData";
 import AppHeader from "@/components/layout/AppHeader";
+
+const quotes = {
+  great: [
+    "Your energy is contagious! Channel it into something amazing today.",
+    "When you feel unstoppable, you become unstoppable. Go get it!",
+    "This is your moment. Make every rep, every step count!",
+    "Champions are made when no one is watching. Keep pushing!",
+    "Your body can do it. It is your mind you need to convince.",
+    "Today is the day to be better than yesterday. You have got this!",
+    "Energy flows where intention goes. Focus and conquer!",
+    "The fire inside you is stronger than any obstacle ahead.",
+  ],
+  good: [
+    "Consistency beats perfection. Keep showing up!",
+    "Good vibes lead to great results. Stay on track!",
+    "You are one workout away from a great mood. Let us go!",
+    "Every step forward is a step toward your best self.",
+    "Success is built one day at a time. Today counts!",
+    "Your dedication today creates your results tomorrow.",
+    "Stay focused, stay positive, stay strong!",
+    "The only bad workout is the one that did not happen.",
+  ],
+  okay: [
+    "Progress is progress, no matter how small. You are doing great!",
+    "Some days are harder than others. What matters is you did not quit.",
+    "Even on tough days, you are building something beautiful.",
+    "Not every day will be your best, but every day can move you forward.",
+    "Showing up when it is hard is what separates dreamers from achievers.",
+    "Be gentle with yourself. Growth takes time and patience.",
+    "Small steps still move you forward. Keep going!",
+    "You do not have to be perfect to make progress.",
+  ],
+  tired: [
+    "Rest is part of the journey. Recovery makes you stronger.",
+    "Listen to your body. Tomorrow is another opportunity.",
+    "Taking care of yourself is the most powerful thing you can do.",
+    "Even rest days are part of your training. Honor your body.",
+    "Recharging today means crushing it tomorrow. Be kind to yourself.",
+    "Your body is your temple. Give it the rest it deserves.",
+    "Strength is knowing when to push and when to pause.",
+    "Recovery is not weakness. It is wisdom.",
+  ],
+};
 
 const Home = () => {
   const { 
@@ -17,9 +61,14 @@ const Home = () => {
     dailyCalorieGoal,
     isGuest
   } = useFitnessPlan();
+  
+  // Initialize user data sync
+  useUserData();
+  
   const [searchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState<string>("fitness-goal");
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [quoteIndex, setQuoteIndex] = useState(0);
 
   // Handle section from URL params
   useEffect(() => {
@@ -80,7 +129,10 @@ const Home = () => {
                             ? "" 
                             : `hover:bg-primary/10`
                         }`}
-                        onClick={() => setSelectedMood(mood)}
+                        onClick={() => {
+                          setSelectedMood(mood);
+                          setQuoteIndex(Math.floor(Math.random() * 8));
+                        }}
                       >
                         <Icon className={`h-4 w-4 ${selectedMood === mood ? "" : color}`} />
                         {label}
@@ -99,65 +151,20 @@ const Home = () => {
                     <div className="p-2 rounded-full bg-primary/10 shrink-0">
                       <Sparkles className="h-4 w-4 text-primary" />
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Daily Motivation</p>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-sm text-muted-foreground">Daily Motivation</p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => setQuoteIndex((prev) => (prev + 1) % 8)}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                      </div>
                       <p className="text-foreground font-medium italic">
-                        {selectedMood === "great" && (
-                          <>
-                            {[
-                              "Your energy is contagious! Channel it into something amazing today.",
-                              "When you feel unstoppable, you become unstoppable. Go get it!",
-                              "This is your moment. Make every rep, every step count!",
-                              "Champions are made when no one is watching. Keep pushing!",
-                              "Your body can do it. It is your mind you need to convince.",
-                              "Today is the day to be better than yesterday. You have got this!",
-                              "Energy flows where intention goes. Focus and conquer!",
-                              "The fire inside you is stronger than any obstacle ahead.",
-                            ][Math.floor(Date.now() / 86400000) % 8]}
-                          </>
-                        )}
-                        {selectedMood === "good" && (
-                          <>
-                            {[
-                              "Consistency beats perfection. Keep showing up!",
-                              "Good vibes lead to great results. Stay on track!",
-                              "You are one workout away from a great mood. Let us go!",
-                              "Every step forward is a step toward your best self.",
-                              "Success is built one day at a time. Today counts!",
-                              "Your dedication today creates your results tomorrow.",
-                              "Stay focused, stay positive, stay strong!",
-                              "The only bad workout is the one that did not happen.",
-                            ][Math.floor(Date.now() / 86400000) % 8]}
-                          </>
-                        )}
-                        {selectedMood === "okay" && (
-                          <>
-                            {[
-                              "Progress is progress, no matter how small. You are doing great!",
-                              "Some days are harder than others. What matters is you did not quit.",
-                              "Even on tough days, you are building something beautiful.",
-                              "Not every day will be your best, but every day can move you forward.",
-                              "Showing up when it is hard is what separates dreamers from achievers.",
-                              "Be gentle with yourself. Growth takes time and patience.",
-                              "Small steps still move you forward. Keep going!",
-                              "You do not have to be perfect to make progress.",
-                            ][Math.floor(Date.now() / 86400000) % 8]}
-                          </>
-                        )}
-                        {selectedMood === "tired" && (
-                          <>
-                            {[
-                              "Rest is part of the journey. Recovery makes you stronger.",
-                              "Listen to your body. Tomorrow is another opportunity.",
-                              "Taking care of yourself is the most powerful thing you can do.",
-                              "Even rest days are part of your training. Honor your body.",
-                              "Recharging today means crushing it tomorrow. Be kind to yourself.",
-                              "Your body is your temple. Give it the rest it deserves.",
-                              "Strength is knowing when to push and when to pause.",
-                              "Recovery is not weakness. It is wisdom.",
-                            ][Math.floor(Date.now() / 86400000) % 8]}
-                          </>
-                        )}
+                        {quotes[selectedMood as keyof typeof quotes][quoteIndex]}
                       </p>
                     </div>
                   </div>

@@ -83,6 +83,66 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          calories_eaten: number
+          created_at: string
+          daily_calorie_goal: number
+          exercise_logs: Json | null
+          exercises_completed_this_month: number
+          exercises_completed_this_week: number
+          exercises_completed_today: number
+          fitness_plan: Json | null
+          food_logs: Json | null
+          health_vitals: Json | null
+          id: string
+          monthly_exercise_goal: number
+          onboarding_answers: Json | null
+          updated_at: string
+          user_id: string
+          user_settings: Json | null
+          weekly_exercise_goal: number
+        }
+        Insert: {
+          calories_eaten?: number
+          created_at?: string
+          daily_calorie_goal?: number
+          exercise_logs?: Json | null
+          exercises_completed_this_month?: number
+          exercises_completed_this_week?: number
+          exercises_completed_today?: number
+          fitness_plan?: Json | null
+          food_logs?: Json | null
+          health_vitals?: Json | null
+          id?: string
+          monthly_exercise_goal?: number
+          onboarding_answers?: Json | null
+          updated_at?: string
+          user_id: string
+          user_settings?: Json | null
+          weekly_exercise_goal?: number
+        }
+        Update: {
+          calories_eaten?: number
+          created_at?: string
+          daily_calorie_goal?: number
+          exercise_logs?: Json | null
+          exercises_completed_this_month?: number
+          exercises_completed_this_week?: number
+          exercises_completed_today?: number
+          fitness_plan?: Json | null
+          food_logs?: Json | null
+          health_vitals?: Json | null
+          id?: string
+          monthly_exercise_goal?: number
+          onboarding_answers?: Json | null
+          updated_at?: string
+          user_id?: string
+          user_settings?: Json | null
+          weekly_exercise_goal?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
