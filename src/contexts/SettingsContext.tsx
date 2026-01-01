@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 export type UserProfile = {
   name: string;
@@ -57,7 +57,7 @@ export type NotificationSettings = {
 };
 
 export type AppPreferences = {
-  theme: "light" | "dark" | "system";
+  theme: "light" | "dark";
   accentColor: string;
   language: string;
   fontSize: "small" | "medium" | "large";
@@ -166,7 +166,7 @@ const defaultNotificationSettings: NotificationSettings = {
 };
 
 const defaultAppPreferences: AppPreferences = {
-  theme: "system",
+  theme: "light",
   accentColor: "#2563EB",
   language: "en",
   fontSize: "medium",
