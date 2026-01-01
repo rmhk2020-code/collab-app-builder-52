@@ -87,17 +87,63 @@ const Home = () => {
                       </Button>
                     ))}
                   </div>
-                  {selectedMood && (
-                    <p className="text-sm text-muted-foreground mt-3 animate-fade-in">
-                      {selectedMood === "great" && "Amazing! Let's make the most of your energy today! 💪"}
-                      {selectedMood === "good" && "Wonderful! You're ready to tackle your goals! 🎯"}
-                      {selectedMood === "okay" && "That's okay! Even small steps count. You've got this! 🌟"}
-                      {selectedMood === "tired" && "Rest is important too. Listen to your body today! 💙"}
-                    </p>
-                  )}
                 </div>
               </CardContent>
             </Card>
+
+            {/* Motivational Quote Card */}
+            {selectedMood && (
+              <Card className="bg-card border-border mb-6 animate-fade-in">
+                <CardContent className="py-5">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-full bg-primary/10 shrink-0">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Daily Motivation</p>
+                      <p className="text-foreground font-medium italic">
+                        {selectedMood === "great" && (
+                          <>
+                            {[
+                              "Your energy is contagious! Channel it into something amazing today.",
+                              "When you feel unstoppable, you become unstoppable. Go get it!",
+                              "This is your moment. Make every rep, every step count!",
+                            ][Math.floor(Date.now() / 86400000) % 3]}
+                          </>
+                        )}
+                        {selectedMood === "good" && (
+                          <>
+                            {[
+                              "Consistency beats perfection. Keep showing up!",
+                              "Good vibes lead to great results. Stay on track!",
+                              "You are one workout away from a great mood. Let us go!",
+                            ][Math.floor(Date.now() / 86400000) % 3]}
+                          </>
+                        )}
+                        {selectedMood === "okay" && (
+                          <>
+                            {[
+                              "Progress is progress, no matter how small. You are doing great!",
+                              "Some days are harder than others. What matters is you did not quit.",
+                              "Even on tough days, you are building something beautiful.",
+                            ][Math.floor(Date.now() / 86400000) % 3]}
+                          </>
+                        )}
+                        {selectedMood === "tired" && (
+                          <>
+                            {[
+                              "Rest is part of the journey. Recovery makes you stronger.",
+                              "Listen to your body. Tomorrow is another opportunity.",
+                              "Taking care of yourself is the most powerful thing you can do.",
+                            ][Math.floor(Date.now() / 86400000) % 3]}
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Progress Tracking Section */}
             {!isGuest && (
