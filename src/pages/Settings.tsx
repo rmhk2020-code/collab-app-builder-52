@@ -285,33 +285,17 @@ const Settings = () => {
     setIsDeleting(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to delete your account.",
-          variant: "destructive",
-        });
-        setIsDeleting(false);
-        return;
+      // Use supabase.functions.invoke for proper auth header handling
+      const { data, error } = await supabase.functions.invoke("delete-account", {
+        method: "POST",
+      });
+
+      if (error) {
+        throw new Error(error.message || "Failed to delete account");
       }
 
-      const response = await fetch(
-        `https://kkvudqvxcjchzehrptvy.supabase.co/functions/v1/delete-account`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok || data.error) {
-        throw new Error(data.error || 'Failed to delete account');
+      if (data?.error) {
+        throw new Error(data.error);
       }
 
       toast({
@@ -319,10 +303,23 @@ const Settings = () => {
         description: "Your account has been permanently deleted.",
       });
 
+      // Clear local storage
+      localStorage.removeItem("fitnessPlan");
+      localStorage.removeItem("hasCompletedOnboarding");
+      localStorage.removeItem("userMood");
+      localStorage.removeItem("quoteIndex");
+
       // Sign out and redirect
-      await supabase.auth.signOut();
-      navigate("/");
+      try {
+        await supabase.auth.signOut();
+      } catch (signOutError) {
+        console.error("Sign out after delete error:", signOutError);
+        // Continue anyway - account is already deleted
+      }
+      
+      navigate("/auth");
     } catch (error: any) {
+      console.error("Delete account error:", error);
       toast({
         title: "Failed to delete account",
         description: error.message || "Something went wrong. Please try again.",
@@ -335,36 +332,30 @@ const Settings = () => {
   };
 
   const handleLogout = async () => {
+    // Clear local storage first
+    localStorage.removeItem("fitnessPlan");
+    localStorage.removeItem("hasCompletedOnboarding");
+    localStorage.removeItem("userMood");
+    localStorage.removeItem("quoteIndex");
+    
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Sign out error:", error);
-        toast({
-          title: "Error",
-          description: "Failed to sign out. Please try again.",
-          variant: "destructive",
-        });
-      } else {
-        // Clear local storage
-        localStorage.removeItem("fitnessPlan");
-        localStorage.removeItem("hasCompletedOnboarding");
-        localStorage.removeItem("userMood");
-        localStorage.removeItem("quoteIndex");
-        
-        toast({
-          title: "Signed Out",
-          description: "You have been signed out successfully.",
-        });
-        navigate("/auth");
+        // Still navigate to auth - user wants to sign out
       }
+      
+      toast({
+        title: "Signed Out",
+        description: "You have been signed out successfully.",
+      });
     } catch (error) {
       console.error("Sign out error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to sign out. Please try again.",
-        variant: "destructive",
-      });
+      // Still navigate to auth even if signOut fails
     }
+    
+    // Always navigate to auth page
+    navigate("/auth");
   };
 
   const handleSave = () => {
