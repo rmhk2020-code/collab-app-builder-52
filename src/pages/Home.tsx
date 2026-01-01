@@ -168,7 +168,7 @@ const Home = () => {
               </CardHeader>
               <CardContent>
                 <Link to="/exercises">
-                  <Button className="w-full min-h-[44px]" size="lg">
+                  <Button className="w-full min-h-[44px]" size="lg" variant="outline">
                     Browse
                   </Button>
                 </Link>
