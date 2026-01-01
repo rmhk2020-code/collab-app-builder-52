@@ -44,6 +44,8 @@ import {
   Info,
   LogOut,
   Mail,
+  KeyRound,
+  Loader2,
 } from "lucide-react";
 
 const Settings = () => {
@@ -71,6 +73,14 @@ const Settings = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  // Password change states
+  const [passwordStep, setPasswordStep] = useState<"idle" | "code" | "newPassword" | "success">("idle");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -80,6 +90,153 @@ const Settings = () => {
     };
     getUser();
   }, []);
+
+  // Password change handlers
+  const handleSendVerificationCode = async () => {
+    if (!userEmail) {
+      toast({
+        title: "Error",
+        description: "No email found. Please sign in again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsPasswordLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("send-password-reset", {
+        body: { email: userEmail },
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        toast({
+          title: "Error",
+          description: data.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setGeneratedCode(data.code);
+      setPasswordStep("code");
+      toast({
+        title: "Code sent!",
+        description: "Check your email for the verification code.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to send code",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPasswordLoading(false);
+    }
+  };
+
+  const handleVerifyCode = () => {
+    if (!verificationCode) {
+      toast({
+        title: "Code required",
+        description: "Please enter the verification code.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (verificationCode !== generatedCode) {
+      toast({
+        title: "Invalid code",
+        description: "The code you entered is incorrect. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setPasswordStep("newPassword");
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!newPassword || !confirmPassword) {
+      toast({
+        title: "Password required",
+        description: "Please enter and confirm your new password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsPasswordLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("update-password", {
+        body: { email: userEmail, newPassword, code: generatedCode },
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        toast({
+          title: "Error",
+          description: data.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setPasswordStep("success");
+      toast({
+        title: "Password updated!",
+        description: "Your password has been changed successfully.",
+      });
+
+      // Reset after 3 seconds
+      setTimeout(() => {
+        setPasswordStep("idle");
+        setVerificationCode("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setGeneratedCode("");
+      }, 3000);
+    } catch (error: any) {
+      toast({
+        title: "Failed to update password",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPasswordLoading(false);
+    }
+  };
+
+  const handleCancelPasswordChange = () => {
+    setPasswordStep("idle");
+    setVerificationCode("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setGeneratedCode("");
+  };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -189,6 +346,146 @@ const Settings = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-lg font-medium text-foreground">{userEmail}</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Change Password Card */}
+            {userEmail && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Lock className="h-5 w-5 text-primary" />
+                    Change Password
+                  </CardTitle>
+                  <CardDescription>Update your account password</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {passwordStep === "idle" && (
+                    <div className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        To change your password, we'll send a verification code to your email.
+                      </p>
+                      <Button 
+                        onClick={handleSendVerificationCode}
+                        className="w-full min-h-[44px] gap-2"
+                        disabled={isPasswordLoading}
+                      >
+                        {isPasswordLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Sending code...
+                          </>
+                        ) : (
+                          <>
+                            <KeyRound className="h-4 w-4" />
+                            Send Verification Code
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+
+                  {passwordStep === "code" && (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Verification Code</Label>
+                        <Input
+                          type="text"
+                          placeholder="Enter 6-digit code"
+                          value={verificationCode}
+                          onChange={(e) => setVerificationCode(e.target.value)}
+                          className="min-h-[44px] text-center text-lg tracking-widest"
+                          maxLength={6}
+                        />
+                        <p className="text-sm text-muted-foreground">
+                          Enter the code sent to {userEmail}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline"
+                          onClick={handleCancelPasswordChange}
+                          className="flex-1 min-h-[44px]"
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={handleVerifyCode}
+                          className="flex-1 min-h-[44px]"
+                        >
+                          Verify Code
+                        </Button>
+                      </div>
+                      <Button
+                        variant="link"
+                        className="w-full"
+                        onClick={handleSendVerificationCode}
+                        disabled={isPasswordLoading}
+                      >
+                        Resend code
+                      </Button>
+                    </div>
+                  )}
+
+                  {passwordStep === "newPassword" && (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>New Password</Label>
+                        <Input
+                          type="password"
+                          placeholder="Enter new password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          className="min-h-[44px]"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Confirm Password</Label>
+                        <Input
+                          type="password"
+                          placeholder="Confirm new password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="min-h-[44px]"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline"
+                          onClick={handleCancelPasswordChange}
+                          className="flex-1 min-h-[44px]"
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={handleUpdatePassword}
+                          className="flex-1 min-h-[44px]"
+                          disabled={isPasswordLoading}
+                        >
+                          {isPasswordLoading ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Updating...
+                            </>
+                          ) : (
+                            "Update Password"
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {passwordStep === "success" && (
+                    <div className="text-center space-y-4">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                        <Lock className="w-6 h-6 text-primary" />
+                      </div>
+                      <p className="text-foreground font-medium">
+                        Password updated successfully!
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
