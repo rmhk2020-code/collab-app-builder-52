@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import healthKineticsLogo from "@/assets/health-kinetics-logo.png";
 
 interface WelcomeScreenProps {
   onContinue: () => void;
@@ -7,7 +8,13 @@ interface WelcomeScreenProps {
 const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
   return (
     <div className="flex flex-col items-center justify-between min-h-screen px-6 py-12 animate-fade-in">
-      <div className="flex-1" />
+      <div className="flex-1 flex items-center justify-center">
+        <img 
+          src={healthKineticsLogo} 
+          alt="Health Kinetics Logo" 
+          className="w-64 md:w-80 lg:w-96 h-auto object-contain"
+        />
+      </div>
       
       <div className="text-center space-y-4">
         <h1 className="text-3xl md:text-4xl font-light text-foreground leading-relaxed">
