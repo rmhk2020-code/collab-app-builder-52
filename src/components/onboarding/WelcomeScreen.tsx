@@ -1,4 +1,6 @@
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import healthKineticsLogo from "@/assets/health-kinetics-logo.png";
 
 interface WelcomeScreenProps {
@@ -6,8 +8,27 @@ interface WelcomeScreenProps {
 }
 
 const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    navigate("/auth");
+  };
+
   return (
     <div className="flex flex-col items-center justify-between min-h-screen px-6 py-12 animate-fade-in">
+      {/* Back Button */}
+      <div className="w-full max-w-sm">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleBack}
+          className="gap-2 min-h-[44px] -ml-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Sign In
+        </Button>
+      </div>
+
       <div className="flex-1 flex items-center justify-center">
         <img 
           src={healthKineticsLogo} 
