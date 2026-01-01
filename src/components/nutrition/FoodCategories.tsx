@@ -77,52 +77,49 @@ export const FoodCategories = () => {
                   </div>
                 </div>
               </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-3">
-                {category.foods.map((food) => (
-                  <div key={food.name} className="p-3 rounded-lg bg-muted/50 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-foreground">{food.name}</span>
-                      <Badge variant={food.isHealthy ? "default" : "destructive"} className="text-xs">
-                        {food.isHealthy ? "Healthy" : "Moderate"}
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 text-xs text-muted-foreground">
-                      <div>
-                        <span className="font-medium text-foreground">{food.calories}</span>
-                        <span className="block">cal</span>
-                      </div>
-                      <div>
-                        <span className="font-medium text-foreground">{food.protein}g</span>
-                        <span className="block">protein</span>
-                      </div>
-                      <div>
-                        <span className="font-medium text-foreground">{food.carbs}g</span>
-                        <span className="block">carbs</span>
-                      </div>
-                      <div>
-                        <span className="font-medium text-foreground">{food.fats}g</span>
-                        <span className="block">fats</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {food.benefits.map((benefit) => (
-                        <Badge key={benefit} variant="outline" className="text-xs">
-                          {benefit}
+              <CardContent className="pt-0">
+                <div className="space-y-3">
+                  {category.foods.map((food) => (
+                    <div key={food.name} className="p-3 rounded-lg bg-muted/50 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-foreground">{food.name}</span>
+                        <Badge variant={food.isHealthy ? "default" : "destructive"} className="text-xs">
+                          {food.isHealthy ? "Healthy" : "Moderate"}
                         </Badge>
-                      ))}
+                      </div>
+                      <div className="grid grid-cols-4 gap-2 text-xs text-muted-foreground">
+                        <div>
+                          <span className="font-medium text-foreground">{food.calories}</span>
+                          <span className="block">cal</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-foreground">{food.protein}g</span>
+                          <span className="block">protein</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-foreground">{food.carbs}g</span>
+                          <span className="block">carbs</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-foreground">{food.fats}g</span>
+                          <span className="block">fats</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {food.benefits.map((benefit) => (
+                          <Badge key={benefit} variant="outline" className="text-xs">
+                            {benefit}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           );
         })}
       </div>
-    </div>
-  );
-};
     </div>
   );
 };
