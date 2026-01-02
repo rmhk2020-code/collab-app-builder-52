@@ -6,7 +6,47 @@ export interface FoodItem {
   fats: number;
   isHealthy: boolean;
   benefits: string[];
+  imageUrl?: string;
 }
+
+// Food image URLs from Unsplash (free, high-quality food images)
+const foodImages: Record<string, string> = {
+  "Salmon": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400",
+  "Blueberries": "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=400",
+  "Walnuts": "https://images.unsplash.com/photo-1563412885-139e4045bf05?w=400",
+  "Dark Chocolate": "https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=400",
+  "Broccoli": "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=400",
+  "Eggs": "https://images.unsplash.com/photo-1518569656558-1f25e69d93d7?w=400",
+  "Avocado": "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=400",
+  "Spinach": "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400",
+  "Chicken Breast": "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=400",
+  "Greek Yogurt": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400",
+  "Oats": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?w=400",
+  "Bananas": "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400",
+  "Sweet Potato": "https://images.unsplash.com/photo-1596097635121-14b63a7b0441?w=400",
+  "Quinoa": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400",
+  "Almonds": "https://images.unsplash.com/photo-1508061253366-f7da158b6d46?w=400",
+  "Carrots": "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400",
+  "Kale": "https://images.unsplash.com/photo-1524179091875-bf99a9a6af57?w=400",
+  "Milk": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400",
+  "Olive Oil": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400",
+  "Garlic": "https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?w=400",
+  "Tomatoes": "https://images.unsplash.com/photo-1546470427-227c7e4f73fc?w=400",
+  "Tuna": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400",
+  "Brown Rice": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400",
+  "Honey": "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400",
+  "Bell Peppers": "https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?w=400",
+  "Cheese": "https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=400",
+  "Tofu": "https://images.unsplash.com/photo-1628689469838-524a4a973b8e?w=400",
+  "Lentils": "https://images.unsplash.com/photo-1622711455459-a7e92fdb99e2?w=400",
+  "Apples": "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400",
+  "Oranges": "https://images.unsplash.com/photo-1547514701-42782101795e?w=400",
+};
+
+// Helper to get image URL for a food item
+export const getFoodImage = (foodName: string): string => {
+  return foodImages[foodName] || `https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400`; // Default healthy food image
+};
 
 export interface FoodCategory {
   title: string;

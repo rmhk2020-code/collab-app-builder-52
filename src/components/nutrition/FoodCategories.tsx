@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Brain, Heart, Dumbbell, Zap, Eye, Bone, Shield, Leaf, Sparkles, Scale, Flame, Moon, Star } from "lucide-react";
-import { foodCategories } from "@/data/foodData";
+import { foodCategories, getFoodImage } from "@/data/foodData";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
+import { FoodVideoPlayer } from "./FoodVideoPlayer";
 
 const iconMap: Record<string, React.ReactNode> = {
   Brain: <Brain className="h-5 w-5" />,
@@ -81,28 +82,50 @@ export const FoodCategories = () => {
                 <div className="space-y-3">
                   {category.foods.map((food) => (
                     <div key={food.name} className="p-3 rounded-lg bg-muted/50 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-foreground">{food.name}</span>
-                        <Badge variant={food.isHealthy ? "default" : "destructive"} className="text-xs">
-                          {food.isHealthy ? "Healthy" : "Moderate"}
-                        </Badge>
-                      </div>
-                      <div className="grid grid-cols-4 gap-2 text-xs text-muted-foreground">
-                        <div>
-                          <span className="font-medium text-foreground">{food.calories}</span>
-                          <span className="block">cal</span>
+                      <div className="flex gap-3">
+                        {/* Food Image */}
+                        <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+                          <img 
+                            src={getFoodImage(food.name)} 
+                            alt={food.name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
                         </div>
-                        <div>
-                          <span className="font-medium text-foreground">{food.protein}g</span>
-                          <span className="block">protein</span>
-                        </div>
-                        <div>
-                          <span className="font-medium text-foreground">{food.carbs}g</span>
-                          <span className="block">carbs</span>
-                        </div>
-                        <div>
-                          <span className="font-medium text-foreground">{food.fats}g</span>
-                          <span className="block">fats</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-medium text-foreground truncate">{food.name}</span>
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              <FoodVideoPlayer 
+                                foodName={food.name}
+                                calories={food.calories}
+                                protein={food.protein}
+                                carbs={food.carbs}
+                                fats={food.fats}
+                              />
+                              <Badge variant={food.isHealthy ? "default" : "destructive"} className="text-xs">
+                                {food.isHealthy ? "Healthy" : "Moderate"}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-4 gap-2 text-xs text-muted-foreground mt-1">
+                            <div>
+                              <span className="font-medium text-foreground">{food.calories}</span>
+                              <span className="block">cal</span>
+                            </div>
+                            <div>
+                              <span className="font-medium text-foreground">{food.protein}g</span>
+                              <span className="block">protein</span>
+                            </div>
+                            <div>
+                              <span className="font-medium text-foreground">{food.carbs}g</span>
+                              <span className="block">carbs</span>
+                            </div>
+                            <div>
+                              <span className="font-medium text-foreground">{food.fats}g</span>
+                              <span className="block">fats</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-1">
