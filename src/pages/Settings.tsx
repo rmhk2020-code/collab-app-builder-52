@@ -405,34 +405,34 @@ const Settings = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <ScrollArea className="w-full">
             <TabsList className="inline-flex h-auto p-1 gap-1 flex-wrap justify-start">
-              <TabsTrigger value="account" className="gap-2 min-h-[40px]">
+              <TabsTrigger value="account" className="gap-2 min-h-[44px]">
                 <User className="h-4 w-4" /> Account
               </TabsTrigger>
-              <TabsTrigger value="fitness" className="gap-2 min-h-[40px]">
+              <TabsTrigger value="fitness" className="gap-2 min-h-[44px]">
                 <Target className="h-4 w-4" /> Fitness Plan
               </TabsTrigger>
-              <TabsTrigger value="exercise" className="gap-2 min-h-[40px]">
+              <TabsTrigger value="exercise" className="gap-2 min-h-[44px]">
                 <Dumbbell className="h-4 w-4" /> Exercise
               </TabsTrigger>
-              <TabsTrigger value="diet" className="gap-2 min-h-[40px]">
+              <TabsTrigger value="diet" className="gap-2 min-h-[44px]">
                 <Apple className="h-4 w-4" /> Diet
               </TabsTrigger>
-              <TabsTrigger value="tracking" className="gap-2 min-h-[40px]">
+              <TabsTrigger value="tracking" className="gap-2 min-h-[44px]">
                 <BarChart3 className="h-4 w-4" /> Tracking
               </TabsTrigger>
-              <TabsTrigger value="notifications" className="gap-2 min-h-[40px]">
+              <TabsTrigger value="notifications" className="gap-2 min-h-[44px]">
                 <Bell className="h-4 w-4" /> Notifications
               </TabsTrigger>
-              <TabsTrigger value="preferences" className="gap-2 min-h-[40px]">
+              <TabsTrigger value="preferences" className="gap-2 min-h-[44px]">
                 <Palette className="h-4 w-4" /> App
               </TabsTrigger>
-              <TabsTrigger value="privacy" className="gap-2 min-h-[40px]">
+              <TabsTrigger value="privacy" className="gap-2 min-h-[44px]">
                 <Shield className="h-4 w-4" /> Privacy
               </TabsTrigger>
-              <TabsTrigger value="smart" className="gap-2 min-h-[40px]">
+              <TabsTrigger value="smart" className="gap-2 min-h-[44px]">
                 <Sparkles className="h-4 w-4" /> Smart
               </TabsTrigger>
-              <TabsTrigger value="system" className="gap-2 min-h-[40px]">
+              <TabsTrigger value="system" className="gap-2 min-h-[44px]">
                 <SettingsIcon className="h-4 w-4" /> System
               </TabsTrigger>
             </TabsList>
@@ -524,7 +524,7 @@ const Settings = () => {
                       </div>
                       <Button
                         variant="link"
-                        className="w-full"
+                        className="w-full min-h-[44px]"
                         onClick={handleSendVerificationCode}
                         disabled={isPasswordLoading}
                       >
