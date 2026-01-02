@@ -18,6 +18,18 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // Extract base64 data and mime type from data URL
+    let imageData = imageBase64;
+    let mimeType = "image/jpeg";
+    
+    if (imageBase64.startsWith("data:")) {
+      const matches = imageBase64.match(/^data:([^;]+);base64,(.+)$/);
+      if (matches) {
+        mimeType = matches[1];
+        imageData = matches[2];
+      }
+    }
+
     console.log("Analyzing food image for athletic goal:", athleticGoal);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -58,7 +70,7 @@ serve(async (req) => {
               {
                 type: "image_url",
                 image_url: {
-                  url: imageBase64
+                  url: `data:${mimeType};base64,${imageData}`
                 }
               }
             ]
@@ -68,6 +80,9 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("AI gateway error:", response.status, errorText);
+      
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
           status: 429,
@@ -80,8 +95,15 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      
+      // Check if it's an image processing error
+      if (errorText.includes("Unable to process input image") || errorText.includes("Base64 decoding failed")) {
+        return new Response(JSON.stringify({ error: "Could not process the image. Please try taking a clearer photo." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      
       throw new Error("AI gateway error");
     }
 
