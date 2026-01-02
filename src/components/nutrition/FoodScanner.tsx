@@ -51,6 +51,8 @@ export const FoodScanner = () => {
   const startCamera = async () => {
     try {
       setCameraReady(false);
+      setIsCapturing(true);
+      
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { 
           facingMode: "environment",
@@ -62,20 +64,35 @@ export const FoodScanner = () => {
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        // Wait for video to be ready
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play().then(() => {
-            setCameraReady(true);
-          }).catch(err => {
-            console.error("Video play error:", err);
-            setCameraReady(true); // Still allow capture attempt
-          });
+        
+        // Use multiple event listeners for better compatibility
+        const handleVideoReady = () => {
+          setCameraReady(true);
         };
+        
+        videoRef.current.onloadeddata = handleVideoReady;
+        videoRef.current.oncanplay = handleVideoReady;
+        
+        // Also set a timeout fallback in case events don't fire
+        setTimeout(() => {
+          if (streamRef.current && !cameraReady) {
+            setCameraReady(true);
+          }
+        }, 2000);
+        
+        try {
+          await videoRef.current.play();
+          setCameraReady(true);
+        } catch (err) {
+          console.error("Video play error:", err);
+          // Still allow capture attempt after a delay
+          setTimeout(() => setCameraReady(true), 1000);
+        }
       }
-      setIsCapturing(true);
     } catch (error) {
       console.error("Camera access denied:", error);
       toast.error(t("unableToAccessCamera"));
+      setIsCapturing(false);
     }
   };
 
@@ -216,10 +233,11 @@ export const FoodScanner = () => {
               autoPlay
               playsInline
               muted
-              className="max-w-full max-h-[60vh] rounded-lg border border-border bg-muted"
+              className={`max-w-full max-h-[60vh] rounded-lg border border-border bg-muted ${cameraReady ? 'opacity-100' : 'opacity-0'}`}
+              style={{ minHeight: '300px', minWidth: '300px' }}
             />
             {!cameraReady && (
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center bg-muted rounded-lg mx-4">
                 <div className="flex flex-col items-center gap-2">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   <p className="text-muted-foreground">{t("loading")}</p>
