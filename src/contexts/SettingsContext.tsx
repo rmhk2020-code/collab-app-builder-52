@@ -228,18 +228,21 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [appPreferences, setAppPreferencesState] = useState<AppPreferences>(getInitialAppPreferences);
   const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(() => loadFromStorage("privacySettings", defaultPrivacySettings));
 
-  // Apply theme to document, persist, and save all settings to localStorage
+  // Apply theme + font size to document, persist
   const setAppPreferences = (prefs: AppPreferences) => {
     setAppPreferencesState(prefs);
     localStorage.setItem("appPreferences", JSON.stringify(prefs));
     localStorage.setItem("theme", prefs.theme);
-    
+
     // Apply theme to document
     if (prefs.theme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
+
+    // Apply font size to document
+    document.documentElement.dataset.fontSize = prefs.fontSize;
   };
 
   // Helper to persist all settings to localStorage for faster restore
@@ -258,13 +261,15 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     persistAllSettings();
   }, [userProfile, fitnessPlanSettings, exerciseSettings, dietSettings, trackingSettings, notificationSettings, privacySettings]);
 
-  // Apply theme on mount
+  // Apply theme + font size on mount
   useEffect(() => {
     if (appPreferences.theme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
+
+    document.documentElement.dataset.fontSize = appPreferences.fontSize;
   }, []);
 
   const loadAllSettings = (settings: Partial<AllSettings>) => {
