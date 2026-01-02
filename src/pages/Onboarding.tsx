@@ -4,30 +4,25 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WelcomeScreen from "@/components/onboarding/WelcomeScreen";
 import ExplanationScreen from "@/components/onboarding/ExplanationScreen";
-import QuestionScreen from "@/components/onboarding/QuestionScreen";
+import DynamicQuestionScreen from "@/components/onboarding/DynamicQuestionScreen";
 import FitnessPlanScreen from "@/components/onboarding/FitnessPlanScreen";
 import FeedbackScreen from "@/components/onboarding/FeedbackScreen";
 import { supabase } from "@/integrations/supabase/client";
 import { useFitnessPlan, type FitnessPlan, type OnboardingAnswers } from "@/contexts/FitnessPlanContext";
-
-const questions = [
-  "What's your main fitness goal right now?",
-  "How would you describe your current fitness level?",
-  "How many days per week can you realistically work out?",
-  "How much time do you usually have for a workout session?",
-  "Do you have any injuries, pain, or limitations we should consider?",
-  "What types of workouts do you enjoy most?",
-  "What usually makes it hard for you to stay consistent with workouts?",
-];
+import { baseQuestions, getNextQuestion, buildQuestionSummary, Question } from "@/data/onboardingQuestions";
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { setFitnessPlan: setGlobalPlan, setAnswers: setGlobalAnswers, setHasCompletedOnboarding, fitnessPlan: existingPlan } = useFitnessPlan();
+  const { setFitnessPlan: setGlobalPlan, setAnswers: setGlobalAnswers, setHasCompletedOnboarding } = useFitnessPlan();
   const [currentStep, setCurrentStep] = useState<"loading" | "welcome" | "explanation" | "questions" | "generating" | "plan" | "feedback">("loading");
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<OnboardingAnswers>({});
+  const [questionHistory, setQuestionHistory] = useState<Question[]>([baseQuestions[0]]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [baseQuestionIndex, setBaseQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [fitnessPlan, setFitnessPlan] = useState<FitnessPlan | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const currentQuestion = questionHistory[currentQuestionIndex];
 
   useEffect(() => {
     const checkUserStatus = async () => {
@@ -35,12 +30,10 @@ const Onboarding = () => {
       const user = session?.user;
       
       if (!user) {
-        // Guest user, show onboarding
         setCurrentStep("welcome");
         return;
       }
 
-      // Check if OAuth user needs to set password
       const provider = user.app_metadata?.provider;
       const providers = user.app_metadata?.providers || [];
       const hasPassword = user.user_metadata?.has_password === true;
@@ -51,7 +44,6 @@ const Onboarding = () => {
         return;
       }
 
-      // Check if user has already completed onboarding (check database)
       const { data: profile } = await supabase
         .from("user_profiles")
         .select("fitness_plan, onboarding_answers")
@@ -59,7 +51,6 @@ const Onboarding = () => {
         .maybeSingle();
 
       if (profile?.fitness_plan) {
-        // User has completed onboarding before, redirect to home
         setGlobalPlan(profile.fitness_plan as unknown as FitnessPlan);
         if (profile.onboarding_answers) {
           setGlobalAnswers(profile.onboarding_answers as unknown as OnboardingAnswers);
@@ -69,7 +60,6 @@ const Onboarding = () => {
         return;
       }
 
-      // New user, show onboarding
       setCurrentStep("welcome");
     };
 
@@ -84,33 +74,74 @@ const Onboarding = () => {
     setCurrentStep("questions");
   };
 
-  const handleAnswer = (answer: string | null) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [currentQuestion]: answer,
-    }));
+  const handleAnswer = (answer: string | string[]) => {
+    const updatedAnswers = { ...answers, [currentQuestion.id]: answer };
+    setAnswers(updatedAnswers);
 
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
+    // Get the next question (could be a follow-up or next base question)
+    const nextQuestion = getNextQuestion(currentQuestion, answer, updatedAnswers, baseQuestionIndex);
+
+    if (nextQuestion) {
+      // Check if it's a follow-up (same base index) or a new base question
+      const isFollowUp = currentQuestion.options?.some(opt => 
+        opt.followUp?.id === nextQuestion.id
+      );
+
+      if (!isFollowUp) {
+        setBaseQuestionIndex(baseQuestionIndex + 1);
+      }
+
+      setQuestionHistory([...questionHistory.slice(0, currentQuestionIndex + 1), nextQuestion]);
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      generateFitnessPlan({ ...answers, [currentQuestion]: answer });
+      // No more questions, generate the plan
+      generateFitnessPlan(updatedAnswers);
+    }
+  };
+
+  const handleSkip = () => {
+    // Move to next base question, skipping follow-ups
+    const nextBaseIndex = baseQuestionIndex + 1;
+    if (nextBaseIndex < baseQuestions.length) {
+      const nextQuestion = baseQuestions[nextBaseIndex];
+      setBaseQuestionIndex(nextBaseIndex);
+      setQuestionHistory([...questionHistory.slice(0, currentQuestionIndex + 1), nextQuestion]);
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      generateFitnessPlan(answers);
     }
   };
 
   const handleBack = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion((prev) => prev - 1);
+    if (currentQuestionIndex > 0) {
+      // Go back in history
+      const prevQuestion = questionHistory[currentQuestionIndex - 1];
+      const wasBaseQuestion = baseQuestions.some(q => q.id === prevQuestion.id);
+      
+      if (wasBaseQuestion && currentQuestion.id !== prevQuestion.id) {
+        // Find the base question index
+        const prevBaseIndex = baseQuestions.findIndex(q => q.id === prevQuestion.id);
+        if (prevBaseIndex >= 0) {
+          setBaseQuestionIndex(prevBaseIndex);
+        }
+      }
+      
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      // Remove the current answer
+      const newAnswers = { ...answers };
+      delete newAnswers[currentQuestion.id];
+      setAnswers(newAnswers);
     } else {
       setCurrentStep("explanation");
     }
   };
 
-  const generateFitnessPlan = async (finalAnswers: OnboardingAnswers, feedback?: string) => {
+  const generateFitnessPlan = async (finalAnswers: Record<string, string | string[]>, feedback?: string) => {
     setCurrentStep("generating");
     setIsGenerating(true);
 
     const fallbackPlan: FitnessPlan = {
-      goal: finalAnswers[0] || "General fitness improvement",
+      goal: String(finalAnswers["primary_goal"] || "General fitness improvement"),
       weeklyPlan: "Start with 3 days per week, gradually increasing as you build consistency.",
       workoutStyle: "A mix of cardio and strength training tailored to your preferences.",
       stayingConsistent: "Set reminders, start small, and celebrate every workout completed.",
@@ -119,12 +150,18 @@ const Onboarding = () => {
     };
 
     try {
-      // Add timeout to prevent infinite loading
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+      // Build a detailed summary for the AI
+      const questionSummary = buildQuestionSummary(finalAnswers);
 
       const { data, error } = await supabase.functions.invoke("generate-fitness-plan", {
-        body: { answers: finalAnswers, questions, feedback },
+        body: { 
+          answers: finalAnswers, 
+          questions: questionSummary.split("\n\n").map(q => q.split("\nAnswer:")[0]),
+          feedback 
+        },
       });
 
       clearTimeout(timeoutId);
@@ -141,14 +178,13 @@ const Onboarding = () => {
 
       setFitnessPlan(data.plan);
       setGlobalPlan(data.plan);
-      setGlobalAnswers(finalAnswers);
+      setGlobalAnswers(finalAnswers as unknown as OnboardingAnswers);
       setCurrentStep("plan");
     } catch (error) {
       console.error("Error generating fitness plan:", error);
-      // Use fallback plan if AI fails
       setFitnessPlan(fallbackPlan);
       setGlobalPlan(fallbackPlan);
-      setGlobalAnswers(finalAnswers);
+      setGlobalAnswers(finalAnswers as unknown as OnboardingAnswers);
       setCurrentStep("plan");
     } finally {
       setIsGenerating(false);
@@ -181,6 +217,9 @@ const Onboarding = () => {
     navigate("/auth");
   };
 
+  // Calculate estimated total questions (base + potential follow-ups)
+  const estimatedTotal = baseQuestions.length + 3; // Add buffer for follow-ups
+
   return (
     <div className="min-h-screen bg-background relative">
       <header className="absolute top-0 left-0 right-0 z-10 p-4">
@@ -203,14 +242,15 @@ const Onboarding = () => {
       {currentStep === "explanation" && (
         <ExplanationScreen onStart={handleStart} />
       )}
-      {currentStep === "questions" && (
-        <QuestionScreen
-          question={questions[currentQuestion]}
-          questionNumber={currentQuestion + 1}
-          totalQuestions={questions.length}
+      {currentStep === "questions" && currentQuestion && (
+        <DynamicQuestionScreen
+          question={currentQuestion}
+          questionNumber={currentQuestionIndex + 1}
+          totalQuestions={estimatedTotal}
           onNext={handleAnswer}
-          onSkip={() => handleAnswer(null)}
+          onSkip={handleSkip}
           onBack={handleBack}
+          isFirstQuestion={currentQuestionIndex === 0}
         />
       )}
       {currentStep === "loading" && (
@@ -226,7 +266,7 @@ const Onboarding = () => {
             Creating your personalized fitness plan...
           </p>
           <p className="text-muted-foreground mt-2 text-center">
-            This will only take a moment
+            Analyzing your answers to build the perfect plan
           </p>
         </div>
       )}

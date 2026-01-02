@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useFitnessPlan } from '@/contexts/FitnessPlanContext';
+import { ExerciseVideoPlayer } from './ExerciseVideoPlayer';
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -161,6 +162,17 @@ export const ExerciseCard = ({ exercise }: ExerciseCardProps) => {
           </CollapsibleTrigger>
           
           <CollapsibleContent className="space-y-4 mt-4">
+            {/* AI Video Demo Button */}
+            <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
+              <ExerciseVideoPlayer 
+                exerciseName={exercise.name}
+                exerciseDescription={exercise.description || ""}
+                steps={exercise.steps}
+              />
+              <span className="text-sm text-muted-foreground">
+                Watch AI-generated demonstration video
+              </span>
+            </div>
             {/* Steps */}
             <div>
               <h4 className="font-semibold mb-2">Steps:</h4>
