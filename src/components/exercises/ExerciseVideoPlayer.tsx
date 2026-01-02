@@ -112,14 +112,20 @@ export const ExerciseVideoPlayer = ({
             </div>
           ) : videoData ? (
             <div className="space-y-4">
-              {/* Thumbnail */}
+              {/* Thumbnail with Play Button */}
               {videoData.thumbnailUrl && (
-                <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-muted group cursor-pointer">
                   <img 
                     src={videoData.thumbnailUrl} 
                     alt={videoData.videoScript.title}
                     className="w-full h-full object-cover"
                   />
+                  {/* Play Button Overlay */}
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition-colors">
+                    <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-lg transform transition-transform group-hover:scale-110">
+                      <Play className="h-8 w-8 text-primary-foreground ml-1" fill="currentColor" />
+                    </div>
+                  </div>
                   <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded text-white text-xs flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     {videoData.videoScript.duration_seconds}s
