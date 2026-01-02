@@ -16,12 +16,12 @@ const Onboarding = () => {
   const { setFitnessPlan: setGlobalPlan, setAnswers: setGlobalAnswers, setHasCompletedOnboarding } = useFitnessPlan();
   const [currentStep, setCurrentStep] = useState<"loading" | "welcome" | "explanation" | "questions" | "generating" | "plan" | "feedback">("loading");
   const [questionHistory, setQuestionHistory] = useState<Question[]>([baseQuestions[0]]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [baseQuestionIndex, setBaseQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [fitnessPlan, setFitnessPlan] = useState<FitnessPlan | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
+  const currentQuestionIndex = questionHistory.length - 1;
   const currentQuestion = questionHistory[currentQuestionIndex];
 
   useEffect(() => {
@@ -78,22 +78,19 @@ const Onboarding = () => {
     const updatedAnswers = { ...answers, [currentQuestion.id]: answer };
     setAnswers(updatedAnswers);
 
-    // Check if the current answer triggers a follow-up
+    // 1) Follow-up?
     let nextQuestion: Question | null = null;
-    let isFollowUp = false;
-
     if (currentQuestion.options) {
       const selectedValues = Array.isArray(answer) ? answer : [answer];
       for (const option of currentQuestion.options) {
         if (selectedValues.includes(option.value) && option.followUp) {
           nextQuestion = option.followUp;
-          isFollowUp = true;
           break;
         }
       }
     }
 
-    // If no follow-up, move to the next base question
+    // 2) Otherwise next base question
     if (!nextQuestion) {
       const nextBaseIndex = baseQuestionIndex + 1;
       if (nextBaseIndex < baseQuestions.length) {
@@ -103,46 +100,45 @@ const Onboarding = () => {
     }
 
     if (nextQuestion) {
-      setQuestionHistory([...questionHistory.slice(0, currentQuestionIndex + 1), nextQuestion]);
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setQuestionHistory((prev) => [...prev, nextQuestion!]);
     } else {
-      // No more questions, generate the plan
       generateFitnessPlan(updatedAnswers);
     }
   };
 
   const handleSkip = () => {
-    // Move to next base question, skipping follow-ups
+    // Always skip to next base question
     const nextBaseIndex = baseQuestionIndex + 1;
     if (nextBaseIndex < baseQuestions.length) {
-      const nextQuestion = baseQuestions[nextBaseIndex];
       setBaseQuestionIndex(nextBaseIndex);
-      setQuestionHistory([...questionHistory.slice(0, currentQuestionIndex + 1), nextQuestion]);
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setQuestionHistory((prev) => [...prev, baseQuestions[nextBaseIndex]]);
     } else {
       generateFitnessPlan(answers);
     }
   };
 
   const handleBack = () => {
-    if (currentQuestionIndex > 0) {
-      // Go back in history
-      const prevQuestion = questionHistory[currentQuestionIndex - 1];
-      const wasBaseQuestion = baseQuestions.some(q => q.id === prevQuestion.id);
-      
-      if (wasBaseQuestion && currentQuestion.id !== prevQuestion.id) {
-        // Find the base question index
-        const prevBaseIndex = baseQuestions.findIndex(q => q.id === prevQuestion.id);
-        if (prevBaseIndex >= 0) {
-          setBaseQuestionIndex(prevBaseIndex);
+    if (questionHistory.length > 1) {
+      const leavingQuestion = currentQuestion;
+
+      setQuestionHistory((prev) => prev.slice(0, -1));
+
+      // Remove the current answer
+      setAnswers((prev) => {
+        const next = { ...prev };
+        delete next[leavingQuestion.id];
+        return next;
+      });
+
+      // Update baseQuestionIndex to the last base question in history
+      const nextHistory = questionHistory.slice(0, -1);
+      for (let i = nextHistory.length - 1; i >= 0; i--) {
+        const idx = baseQuestions.findIndex((q) => q.id === nextHistory[i].id);
+        if (idx >= 0) {
+          setBaseQuestionIndex(idx);
+          break;
         }
       }
-      
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-      // Remove the current answer
-      const newAnswers = { ...answers };
-      delete newAnswers[currentQuestion.id];
-      setAnswers(newAnswers);
     } else {
       setCurrentStep("explanation");
     }
@@ -236,15 +232,18 @@ const Onboarding = () => {
     <div className="min-h-screen bg-background relative">
       <header className="absolute top-0 left-0 right-0 z-10 p-4">
         <div className="container mx-auto max-w-6xl">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBackToSignIn}
-            className="gap-2 min-h-[44px]"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Sign In
-          </Button>
+          {currentStep !== "welcome" && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleBackToSignIn}
+              className="gap-2 min-h-[44px]"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Sign In
+            </Button>
+          )}
         </div>
       </header>
 
