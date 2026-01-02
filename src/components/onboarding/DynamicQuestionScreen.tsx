@@ -165,6 +165,7 @@ const DynamicQuestionScreen = ({
                   checked={selectedOptions.includes(option.value)}
                   onCheckedChange={() => toggleMultiOption(option.value)}
                   id={option.value}
+                  onClick={(e) => e.stopPropagation()}
                 />
                 <Label
                   htmlFor={option.value}
@@ -181,6 +182,7 @@ const DynamicQuestionScreen = ({
       {/* Navigation */}
       <div className="w-full max-w-sm space-y-3">
         <Button
+          type="button"
           onClick={handleNext}
           size="lg"
           className="w-full text-lg min-h-[52px] py-4 transition-all duration-300 hover:scale-105 active:scale-[0.98]"
@@ -190,6 +192,7 @@ const DynamicQuestionScreen = ({
         </Button>
         <div className="flex gap-3">
           <Button
+            type="button"
             onClick={handleBack}
             variant="outline"
             size="lg"
@@ -198,6 +201,7 @@ const DynamicQuestionScreen = ({
             {isFirstQuestion ? "Sign In" : "Back"}
           </Button>
           <Button
+            type="button"
             onClick={onSkip}
             variant="ghost"
             size="lg"
