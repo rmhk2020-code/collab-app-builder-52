@@ -27,7 +27,6 @@ import {
   Shield,
   Sparkles,
   Settings as SettingsIcon,
-  Save,
   RefreshCw,
   Moon,
   Sun,
@@ -358,12 +357,8 @@ const Settings = () => {
     navigate("/auth");
   };
 
-  const handleSave = () => {
-    toast({
-      title: "Settings Saved",
-      description: "Your preferences have been updated successfully.",
-    });
-  };
+  // Settings auto-save is handled by useUserData hook with 2-second debounce
+  // No manual save needed
 
   const handleResetPlan = () => {
     // Clear local storage
@@ -399,13 +394,9 @@ const Settings = () => {
               </Link>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-                <p className="text-sm text-muted-foreground">Customize your Health Kinetics experience</p>
+                <p className="text-sm text-muted-foreground">Changes are saved automatically</p>
               </div>
             </div>
-            <Button onClick={handleSave} className="min-h-[44px] gap-2">
-              <Save className="h-4 w-4" />
-              Save All
-            </Button>
           </div>
         </div>
       </header>
