@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Play, Pause, Loader2, Video, Clock, Info, Volume2 } from "lucide-react";
+import { Loader2, Video, Volume2, VolumeX } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import demoExerciseVideo from "@/assets/demo-exercise.mp4";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 
 interface VideoScene {
   timestamp: string;
@@ -17,7 +19,6 @@ interface VideoScript {
   description: string;
   duration_seconds: number;
   scenes: VideoScene[];
-  thumbnailDescription: string;
 }
 
 interface ExerciseVideoPlayerProps {
@@ -26,45 +27,48 @@ interface ExerciseVideoPlayerProps {
   steps: string[];
 }
 
-export const ExerciseVideoPlayer = ({ 
-  exerciseName, 
+export const ExerciseVideoPlayer = ({
+  exerciseName,
   exerciseDescription,
-  steps 
+  steps,
 }: ExerciseVideoPlayerProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [videoData, setVideoData] = useState<{
-    videoScript: VideoScript;
-    thumbnailUrl: string | null;
-  } | null>(null);
-  const [currentScene, setCurrentScene] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const progressRef = useRef<NodeJS.Timeout | null>(null);
+  const [script, setScript] = useState<VideoScript | null>(null);
 
-  const generateVideo = async () => {
+  const { isSupported, isSpeaking, speak, stop } = useSpeechSynthesis();
+
+  const narrationText = useMemo(() => {
+    const stepText = steps.length ? `Steps: ${steps.map((s, i) => `${i + 1}. ${s}`).join(". ")}.` : "";
+    const cueText = script?.scenes?.length
+      ? `Coach cues: ${script.scenes
+          .flatMap((s) => s.keyPoints || [])
+          .slice(0, 8)
+          .join(", ")}.`
+      : "";
+
+    return `${exerciseName}. ${exerciseDescription || ""} ${stepText} ${cueText}`.replace(/\s+/g, " ").trim();
+  }, [exerciseName, exerciseDescription, steps, script]);
+
+  const fetchInstructions = async () => {
     setIsLoading(true);
     try {
       const prompt = `${exerciseName}: ${exerciseDescription}. Steps: ${steps.join(". ")}`;
-      
+
       const { data, error } = await supabase.functions.invoke("generate-video", {
-        body: { 
+        body: {
           prompt,
           type: "exercise",
-          duration: 30
+          duration: 30,
         },
       });
 
       if (error) throw error;
 
-      setVideoData(data);
-      setCurrentScene(0);
-      setProgress(0);
-      toast.success("Video guide generated!");
-    } catch (error) {
-      console.error("Error generating video:", error);
-      toast.error("Failed to generate video. Please try again.");
+      setScript(data?.videoScript ?? null);
+    } catch (e) {
+      console.error("Failed to load exercise instructions:", e);
+      toast.error("Couldn't load exercise instructions. Video will still play.");
     } finally {
       setIsLoading(false);
     }
@@ -72,273 +76,95 @@ export const ExerciseVideoPlayer = ({
 
   const handleOpen = () => {
     setIsOpen(true);
-    if (!videoData) {
-      generateVideo();
-    }
+    if (!script) fetchInstructions();
   };
 
   const handleClose = () => {
     setIsOpen(false);
-    stopPlayback();
+    stop();
   };
 
-  const stopPlayback = () => {
-    setIsPlaying(false);
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    if (progressRef.current) {
-      clearInterval(progressRef.current);
-      progressRef.current = null;
-    }
-  };
-
-  const handlePlayPause = () => {
-    if (isPlaying) {
-      stopPlayback();
-    } else {
-      setIsPlaying(true);
-      const sceneDuration = 5000; // 5 seconds per scene
-      const progressStep = 100 / (sceneDuration / 100);
-
-      // Progress bar animation
-      progressRef.current = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 100) return 0;
-          return prev + progressStep;
-        });
-      }, 100);
-
-      // Scene advancement
-      intervalRef.current = setInterval(() => {
-        setCurrentScene(prev => {
-          if (videoData && prev < videoData.videoScript.scenes.length - 1) {
-            setProgress(0);
-            return prev + 1;
-          } else {
-            stopPlayback();
-            setProgress(0);
-            return prev;
-          }
-        });
-      }, sceneDuration);
-    }
-  };
-
-  const goToScene = (index: number) => {
-    stopPlayback();
-    setCurrentScene(index);
-    setProgress(0);
-  };
-
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      if (progressRef.current) clearInterval(progressRef.current);
-    };
-  }, []);
-
-  const currentSceneData = videoData?.videoScript.scenes[currentScene];
+    if (!isOpen) stop();
+  }, [isOpen, stop]);
 
   return (
     <>
-      <Button 
-        variant="outline" 
-        size="sm" 
-        onClick={handleOpen}
-        className="gap-2"
-      >
+      <Button variant="outline" size="sm" onClick={handleOpen} className="gap-2">
         <Video className="h-4 w-4" />
         Watch Demo
       </Button>
 
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Video className="h-5 w-5 text-primary" />
-              {exerciseName} - Video Guide
+              {exerciseName} — Demo Video
             </DialogTitle>
           </DialogHeader>
 
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-              <p className="text-muted-foreground">Generating AI video guide...</p>
-              <p className="text-sm text-muted-foreground mt-2">This may take a moment</p>
+          <div className="space-y-4">
+            <div className="rounded-lg overflow-hidden bg-muted">
+              <video
+                src={demoExerciseVideo}
+                className="w-full h-auto"
+                controls
+                playsInline
+                preload="metadata"
+              />
             </div>
-          ) : videoData ? (
-            <div className="space-y-4">
-              {/* Video Player Area */}
-              <div 
-                className="relative aspect-video rounded-lg overflow-hidden bg-gradient-to-br from-muted to-muted/50 group cursor-pointer"
-                onClick={handlePlayPause}
-              >
-                {videoData.thumbnailUrl && (
-                  <img 
-                    src={videoData.thumbnailUrl} 
-                    alt={videoData.videoScript.title}
-                    className={`w-full h-full object-cover transition-all duration-300 ${isPlaying ? 'scale-105' : ''}`}
-                  />
-                )}
-                
-                {/* Scene description overlay when playing */}
-                {isPlaying && currentSceneData && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4">
-                    <p className="text-white text-lg font-medium animate-fade-in">
-                      {currentSceneData.description}
-                    </p>
-                    {currentSceneData.audio && (
-                      <p className="text-white/70 text-sm flex items-center gap-1 mt-1 animate-fade-in">
-                        <Volume2 className="h-3 w-3" />
-                        {currentSceneData.audio}
-                      </p>
-                    )}
-                  </div>
-                )}
-                
-                {/* Play/Pause Button Overlay */}
-                <div className={`absolute inset-0 flex items-center justify-center transition-opacity ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100 bg-black/40'}`}>
-                  <div className={`w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-lg transform transition-transform group-hover:scale-110 ${isPlaying ? 'animate-pulse' : ''}`}>
-                    {isPlaying ? (
-                      <Pause className="h-8 w-8 text-primary-foreground" fill="currentColor" />
-                    ) : (
-                      <Play className="h-8 w-8 text-primary-foreground ml-1" fill="currentColor" />
-                    )}
-                  </div>
-                </div>
 
-                {/* Progress bar */}
-                {isPlaying && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/50">
-                    <div 
-                      className="h-full bg-primary transition-all duration-100"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                )}
-
-                {/* Duration badge */}
-                <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded text-white text-xs flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {videoData.videoScript.duration_seconds}s
-                </div>
-              </div>
-
-              {/* Scene Navigation Dots */}
-              <div className="flex justify-center gap-2">
-                {videoData.videoScript.scenes.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => goToScene(i)}
-                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                      i === currentScene 
-                        ? 'bg-primary scale-125' 
-                        : i < currentScene 
-                          ? 'bg-primary/50' 
-                          : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Scene Details Card */}
-              <div className="bg-muted rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold text-sm">
-                    Step {currentScene + 1} of {videoData.videoScript.scenes.length}
-                  </h4>
-                  <span className="text-xs text-muted-foreground">
-                    {currentSceneData?.timestamp}
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-sm text-muted-foreground">
+                {isLoading ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Loading instructions…
                   </span>
-                </div>
-                
-                <p className="text-foreground mb-3">
-                  {currentSceneData?.description}
-                </p>
-
-                {currentSceneData?.audio && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3 bg-background/50 p-2 rounded">
-                    <Volume2 className="h-4 w-4 text-primary" />
-                    <span className="italic">{currentSceneData.audio}</span>
-                  </div>
+                ) : (
+                  <span>Instructions & cues</span>
                 )}
-
-                {currentSceneData?.keyPoints && currentSceneData.keyPoints.length > 0 && (
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                      <Info className="h-3 w-3" /> Key Points:
-                    </p>
-                    <ul className="list-disc list-inside text-sm space-y-1">
-                      {currentSceneData.keyPoints.map((point, i) => (
-                        <li key={i} className="text-muted-foreground">{point}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Scene Navigation Buttons */}
-                <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => goToScene(Math.max(0, currentScene - 1))}
-                    disabled={currentScene === 0}
-                  >
-                    Previous
-                  </Button>
-                  
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={handlePlayPause}
-                    className="gap-2"
-                  >
-                    {isPlaying ? (
-                      <>
-                        <Pause className="h-4 w-4" />
-                        Pause
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-4 w-4" />
-                        Play
-                      </>
-                    )}
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => goToScene(Math.min(videoData.videoScript.scenes.length - 1, currentScene + 1))}
-                    disabled={currentScene === videoData.videoScript.scenes.length - 1}
-                  >
-                    Next
-                  </Button>
-                </div>
               </div>
 
-              {/* Regenerate */}
-              <Button 
-                variant="secondary" 
-                className="w-full"
-                onClick={generateVideo}
-                disabled={isLoading}
-              >
-                <Video className="h-4 w-4 mr-2" />
-                Regenerate Video Guide
-              </Button>
+              {isSupported && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => (isSpeaking ? stop() : speak(narrationText))}
+                >
+                  {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                  {isSpeaking ? "Stop voice" : "Play voice"}
+                </Button>
+              )}
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12">
-              <p className="text-muted-foreground">No video generated yet</p>
-              <Button onClick={generateVideo} className="mt-4">
-                Generate Video Guide
-              </Button>
+
+            <div className="space-y-3">
+              {steps.length > 0 && (
+                <div className="rounded-lg border border-border p-4">
+                  <h4 className="font-semibold text-foreground mb-2">Steps</h4>
+                  <ol className="list-decimal list-inside space-y-1 text-sm text-foreground">
+                    {steps.map((s, i) => (
+                      <li key={i}>{s}</li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+
+              {script?.scenes?.length ? (
+                <div className="rounded-lg border border-border p-4">
+                  <h4 className="font-semibold text-foreground mb-2">Coach cues</h4>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    {script.scenes.slice(0, 6).map((scene, idx) => (
+                      <li key={idx}>
+                        <span className="font-medium text-foreground">{scene.timestamp}:</span> {scene.description}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
             </div>
-          )}
+          </div>
         </DialogContent>
       </Dialog>
     </>

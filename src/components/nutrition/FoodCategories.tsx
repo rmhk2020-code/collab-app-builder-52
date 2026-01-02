@@ -161,6 +161,11 @@ export const FoodCategories = () => {
                               alt={food.name}
                               className="w-full h-full object-cover"
                               loading="lazy"
+                              onError={(e) => {
+                                // fallback to a known-good default image
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = getFoodImage("__fallback__");
+                              }}
                             />
                           </div>
                           <div className="flex-1 min-w-0">

@@ -34,7 +34,7 @@ const AppHeader = ({ title, showTitle = true }: AppHeaderProps) => {
               </div>
             </SheetHeader>
             <nav className="mt-6 flex flex-col gap-2">
-              <Link to="/home" onClick={() => setSheetOpen(false)}>
+              <Link to="/home?section=fitness-goal" onClick={() => setSheetOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start min-h-[44px]">
                   <Target className="h-5 w-5 mr-3" />
                   Fitness Goal
@@ -56,12 +56,6 @@ const AppHeader = ({ title, showTitle = true }: AppHeaderProps) => {
                 <Button variant="ghost" className="w-full justify-start min-h-[44px]">
                   <Activity className="h-5 w-5 mr-3" />
                   Vitals
-                </Button>
-              </Link>
-              <Link to="/home?section=fitness-goal" onClick={() => setSheetOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start min-h-[44px]">
-                  <Target className="h-5 w-5 mr-3" />
-                  Fitness Goal
                 </Button>
               </Link>
               <Link to="/home?section=about-us" onClick={() => setSheetOpen(false)}>

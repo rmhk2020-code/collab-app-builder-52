@@ -91,10 +91,8 @@ const Home = () => {
 
   // Handle section from URL params
   useEffect(() => {
-    const section = searchParams.get("section");
-    if (section) {
-      setActiveSection(section);
-    }
+    const section = searchParams.get("section") ?? "fitness-goal";
+    setActiveSection(section);
   }, [searchParams]);
 
   // Save mood to localStorage when it changes
