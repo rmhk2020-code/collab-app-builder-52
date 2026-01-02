@@ -24,23 +24,30 @@ serve(async (req) => {
     let videoPrompt = "";
     
     if (type === "exercise") {
-      videoPrompt = `Professional fitness demonstration video: ${prompt}. 
-        Show a person performing the exercise with proper form, clear movements, and appropriate pacing. 
-        The video should be educational and demonstrate correct technique.
-        High quality, well-lit gym or home workout setting.`;
-    } else if (type === "food_preparation") {
-      videoPrompt = `Professional cooking demonstration video: ${prompt}. 
-        Show the food preparation process step by step, including ingredient handling and cooking techniques.
-        Clean, well-lit kitchen setting with professional presentation.
-        Focus on the key preparation steps.`;
+      videoPrompt = `Create a detailed fitness exercise demonstration video script for: ${prompt}. 
+        The video should show a person performing the exercise with:
+        - Clear starting position
+        - Proper form throughout the movement  
+        - Smooth, controlled tempo
+        - Safety cues and breathing instructions
+        Professional gym or home workout setting with good lighting.
+        Duration: approximately ${duration || 30} seconds.`;
+    } else if (type === "food") {
+      videoPrompt = `Create a detailed cooking/food preparation video script for: ${prompt}. 
+        The video should show:
+        - Ingredients laid out with labels
+        - Step-by-step preparation techniques
+        - Cooking methods with timing
+        - Plating and presentation
+        - Nutritional tips during preparation
+        Clean, professional kitchen setting with natural lighting.
+        Include sound descriptions: sizzling, chopping, mixing sounds.
+        Duration: approximately ${duration || 30} seconds.`;
     } else {
       videoPrompt = prompt;
     }
 
-    // Use Lovable AI gateway for video generation via the Gemini model
-    // Note: If Gemini doesn't support video, we'll generate a descriptive response
-    // that could be used with an external video generation API
-    
+    // Generate video script with detailed scenes
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -52,26 +59,32 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a video script generator for fitness and nutrition content. 
-            Create a detailed video script that describes what should be shown frame by frame.
-            Format your response as JSON with the following structure:
+            content: `You are a professional video production script writer for fitness and nutrition content.
+            Create detailed, engaging video scripts that describe what should be shown and heard.
+            
+            Format your response as JSON with this exact structure:
             {
               "title": "Video title",
-              "description": "Brief description",
-              "duration_seconds": number,
+              "description": "Brief 1-2 sentence description",
+              "duration_seconds": number (total duration),
               "scenes": [
                 {
                   "timestamp": "0:00-0:05",
-                  "description": "What's happening in this scene",
-                  "keyPoints": ["point1", "point2"]
+                  "description": "Detailed visual description of what's happening",
+                  "audio": "Sound effects and any narration",
+                  "keyPoints": ["Important point 1", "Important point 2"]
                 }
               ],
-              "thumbnailDescription": "Description for a thumbnail image"
-            }`
+              "thumbnailDescription": "Description for generating a thumbnail image"
+            }
+            
+            Create 4-6 scenes that flow naturally. Include realistic audio/sound descriptions.
+            For exercise videos: include form cues, breathing instructions, common mistakes to avoid.
+            For food videos: include cooking sounds (sizzling, chopping), ingredient tips, nutritional facts.`
           },
           {
             role: "user",
-            content: `Create a video script for: ${videoPrompt}. Duration should be approximately ${duration || 30} seconds.`
+            content: videoPrompt
           }
         ],
       }),
@@ -111,18 +124,41 @@ serve(async (req) => {
       }
     } catch (parseError) {
       console.error("Failed to parse AI response:", parseError);
+      // Create a fallback script
+      const isExercise = type === "exercise";
       videoScript = {
-        title: `${type === "exercise" ? "Exercise" : "Preparation"} Guide`,
+        title: isExercise ? "Exercise Demonstration" : "Food Preparation Guide",
         description: prompt,
         duration_seconds: duration || 30,
         scenes: [
           {
-            timestamp: "0:00-0:30",
-            description: prompt,
-            keyPoints: ["Follow along with the demonstration"]
+            timestamp: "0:00-0:08",
+            description: isExercise ? "Starting position demonstration with proper form setup" : "Ingredients overview with nutritional information",
+            audio: isExercise ? "Upbeat background music starts" : "Gentle cooking ambiance, knife on cutting board",
+            keyPoints: [isExercise ? "Feet shoulder-width apart" : "Fresh, quality ingredients", isExercise ? "Core engaged" : "Prep all ingredients first"]
+          },
+          {
+            timestamp: "0:08-0:16",
+            description: isExercise ? "Main movement execution with controlled tempo" : "Primary preparation and cooking steps",
+            audio: isExercise ? "Rhythmic breathing, 'Inhale... exhale'" : "Sizzling sounds, ingredients cooking",
+            keyPoints: [isExercise ? "Full range of motion" : "Medium heat for best results", isExercise ? "Breathe steadily" : "Stir occasionally"]
+          },
+          {
+            timestamp: "0:16-0:24",
+            description: isExercise ? "Common mistakes to avoid with correction" : "Finishing touches and seasoning",
+            audio: isExercise ? "Coach voice: 'Keep your back straight'" : "Salt and pepper shaking, taste testing",
+            keyPoints: [isExercise ? "Don't rush the movement" : "Season to taste", isExercise ? "Quality over quantity" : "Let flavors develop"]
+          },
+          {
+            timestamp: "0:24-0:30",
+            description: isExercise ? "Final rep and cool down position" : "Plating and final presentation",
+            audio: isExercise ? "Music fades, 'Great job!'" : "Plate being set down, 'Enjoy your meal!'",
+            keyPoints: [isExercise ? "Stretch after exercise" : "Garnish for presentation", isExercise ? "Stay hydrated" : "Serve immediately"]
           }
         ],
-        thumbnailDescription: prompt
+        thumbnailDescription: isExercise 
+          ? `Professional fitness trainer demonstrating ${prompt}, gym setting`
+          : `Beautifully prepared ${prompt} on a white plate, kitchen background`
       };
     }
 
@@ -138,8 +174,11 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: `Generate a professional thumbnail image for a ${type === "exercise" ? "fitness exercise" : "cooking"} video: ${videoScript.thumbnailDescription || prompt}. 
-            Make it visually appealing and representative of the content. High quality, well-composed shot.`
+            content: `Generate a high-quality, professional thumbnail image for a ${type === "exercise" ? "fitness exercise" : "cooking and food preparation"} video. 
+            Subject: ${videoScript.thumbnailDescription || prompt}
+            Style: Bright, well-lit, professional photography quality. 
+            ${type === "exercise" ? "Show action and movement, athletic person in workout clothes" : "Show appetizing food with steam or fresh ingredients visible"}.
+            High resolution, clean composition.`
           }
         ],
         modalities: ["image", "text"]
