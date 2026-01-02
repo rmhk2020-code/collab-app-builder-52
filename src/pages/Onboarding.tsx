@@ -11,6 +11,48 @@ import { supabase } from "@/integrations/supabase/client";
 import { useFitnessPlan, type FitnessPlan, type OnboardingAnswers } from "@/contexts/FitnessPlanContext";
 import { baseQuestions, buildQuestionSummary, Question } from "@/data/onboardingQuestions";
 
+const ONBOARDING_STORAGE_KEY = "onboarding_progress";
+
+interface OnboardingProgress {
+  step: "welcome" | "explanation" | "questions" | "generating" | "plan" | "feedback";
+  questionHistory: Question[];
+  answers: Record<string, string | string[]>;
+  timestamp: number;
+}
+
+const saveProgress = (progress: OnboardingProgress) => {
+  try {
+    localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(progress));
+  } catch (error) {
+    console.error("Failed to save onboarding progress:", error);
+  }
+};
+
+const loadProgress = (): OnboardingProgress | null => {
+  try {
+    const saved = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+    if (!saved) return null;
+    
+    const progress = JSON.parse(saved) as OnboardingProgress;
+    
+    // Check if progress is less than 24 hours old
+    const oneDay = 24 * 60 * 60 * 1000;
+    if (Date.now() - progress.timestamp > oneDay) {
+      localStorage.removeItem(ONBOARDING_STORAGE_KEY);
+      return null;
+    }
+    
+    return progress;
+  } catch (error) {
+    console.error("Failed to load onboarding progress:", error);
+    return null;
+  }
+};
+
+const clearProgress = () => {
+  localStorage.removeItem(ONBOARDING_STORAGE_KEY);
+};
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const { setFitnessPlan: setGlobalPlan, setAnswers: setGlobalAnswers, setHasCompletedOnboarding } = useFitnessPlan();
@@ -25,6 +67,18 @@ const Onboarding = () => {
   const currentQuestionIndex = questionHistory.length - 1;
   const currentQuestion = questionHistory[currentQuestionIndex];
 
+  // Save progress whenever answers or step changes
+  useEffect(() => {
+    if (currentStep === "loading" || currentStep === "generating" || currentStep === "plan") return;
+    
+    saveProgress({
+      step: currentStep,
+      questionHistory,
+      answers,
+      timestamp: Date.now()
+    });
+  }, [currentStep, questionHistory, answers]);
+
   useEffect(() => {
     if (hasCheckedUserStatus.current) return;
     hasCheckedUserStatus.current = true;
@@ -33,9 +87,21 @@ const Onboarding = () => {
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
 
-      // Guest flow: do NOT keep re-checking and resetting steps.
+      // Guest flow: try to restore progress
       if (!user) {
-        setCurrentStep("welcome");
+        const savedProgress = loadProgress();
+        if (savedProgress) {
+          // Restore saved progress
+          if (savedProgress.step === "questions" && savedProgress.questionHistory.length > 0) {
+            setQuestionHistory(savedProgress.questionHistory);
+          }
+          if (Object.keys(savedProgress.answers).length > 0) {
+            setAnswers(savedProgress.answers);
+          }
+          setCurrentStep(savedProgress.step);
+        } else {
+          setCurrentStep("welcome");
+        }
         return;
       }
 
@@ -61,11 +127,24 @@ const Onboarding = () => {
           setGlobalAnswers(profile.onboarding_answers as unknown as OnboardingAnswers);
         }
         setHasCompletedOnboarding(true);
+        clearProgress(); // Clear saved progress when completing
         navigate("/home");
         return;
       }
 
-      setCurrentStep("welcome");
+      // For logged-in users, also check for saved progress
+      const savedProgress = loadProgress();
+      if (savedProgress) {
+        if (savedProgress.step === "questions" && savedProgress.questionHistory.length > 0) {
+          setQuestionHistory(savedProgress.questionHistory);
+        }
+        if (Object.keys(savedProgress.answers).length > 0) {
+          setAnswers(savedProgress.answers);
+        }
+        setCurrentStep(savedProgress.step);
+      } else {
+        setCurrentStep("welcome");
+      }
     };
 
     checkUserStatus();
@@ -191,12 +270,14 @@ const Onboarding = () => {
       setFitnessPlan(data.plan);
       setGlobalPlan(data.plan);
       setGlobalAnswers(finalAnswers as unknown as OnboardingAnswers);
+      clearProgress(); // Clear saved progress when plan is generated
       setCurrentStep("plan");
     } catch (error) {
       console.error("Error generating fitness plan:", error);
       setFitnessPlan(fallbackPlan);
       setGlobalPlan(fallbackPlan);
       setGlobalAnswers(finalAnswers as unknown as OnboardingAnswers);
+      clearProgress();
       setCurrentStep("plan");
     } finally {
       setIsGenerating(false);
@@ -217,6 +298,7 @@ const Onboarding = () => {
 
   const handleFinish = () => {
     setHasCompletedOnboarding(true);
+    clearProgress();
     navigate("/home");
   };
 
@@ -226,6 +308,7 @@ const Onboarding = () => {
     } catch {
       // ignore
     }
+    clearProgress();
     navigate("/auth");
   };
 

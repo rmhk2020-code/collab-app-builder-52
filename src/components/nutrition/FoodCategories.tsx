@@ -1,7 +1,10 @@
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Heart, Dumbbell, Zap, Eye, Bone, Shield, Leaf, Sparkles, Scale, Flame, Moon, Star } from "lucide-react";
-import { foodCategories, getFoodImage } from "@/data/foodData";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Brain, Heart, Dumbbell, Zap, Eye, Bone, Shield, Leaf, Sparkles, Scale, Flame, Moon, Star, Search, X } from "lucide-react";
+import { foodCategories, getFoodImage, FoodItem } from "@/data/foodData";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import { FoodVideoPlayer } from "./FoodVideoPlayer";
 
@@ -38,11 +41,36 @@ const isFoodRecommended = (categoryTitle: string, fitnessPlan: any): boolean => 
 
 export const FoodCategories = () => {
   const { isGuest, fitnessPlan } = useFitnessPlan();
-  
-  // Guest users see only first category with 5 foods
-  const displayCategories = isGuest 
-    ? [{ ...foodCategories[0], foods: foodCategories[0].foods.slice(0, 5) }]
-    : foodCategories;
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter categories and foods by search query
+  const filteredCategories = useMemo(() => {
+    const categories = isGuest 
+      ? [{ ...foodCategories[0], foods: foodCategories[0].foods.slice(0, 5) }]
+      : foodCategories;
+
+    if (!searchQuery.trim()) return categories;
+    
+    const query = searchQuery.toLowerCase().trim();
+    
+    return categories
+      .map(category => {
+        // Filter foods within each category
+        const filteredFoods = category.foods.filter(food =>
+          food.name.toLowerCase().includes(query) ||
+          food.benefits.some(benefit => benefit.toLowerCase().includes(query)) ||
+          category.title.toLowerCase().includes(query)
+        );
+        
+        return { ...category, foods: filteredFoods };
+      })
+      .filter(category => category.foods.length > 0);
+  }, [isGuest, searchQuery]);
+
+  // Count total foods for display
+  const totalFoods = useMemo(() => {
+    return filteredCategories.reduce((sum, cat) => sum + cat.foods.length, 0);
+  }, [filteredCategories]);
 
   return (
     <div className="space-y-6">
@@ -52,97 +80,141 @@ export const FoodCategories = () => {
           Discover foods that target specific areas of your health
           {isGuest && <span className="block text-sm text-amber-500 mt-1">Guest preview: Showing 5 foods. Sign in for 300+ foods!</span>}
         </p>
+
+        {/* Search Bar */}
+        <div className="max-w-xl mx-auto mt-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search foods by name, benefit, category..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10 h-12 text-base"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          {searchQuery && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Found {totalFoods} food{totalFoods !== 1 ? 's' : ''} in {filteredCategories.length} categor{filteredCategories.length !== 1 ? 'ies' : 'y'} matching "{searchQuery}"
+            </p>
+          )}
+        </div>
       </div>
       
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayCategories.map((category) => {
-          const recommended = isFoodRecommended(category.title, fitnessPlan);
-          return (
-            <Card key={category.title} className={`border-border bg-card ${recommended ? 'ring-2 ring-primary/50' : ''}`}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                    {iconMap[category.icon] || <Leaf className="h-5 w-5" />}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <CardTitle className="text-lg text-card-foreground">{category.title}</CardTitle>
-                      {recommended && (
-                        <Badge className="bg-primary text-primary-foreground text-xs">
-                          <Star className="h-3 w-3 mr-1" />
-                          Recommended
-                        </Badge>
-                      )}
+      {filteredCategories.length === 0 ? (
+        <Card className="text-center p-8">
+          <CardContent>
+            <Leaf className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">No foods found</h3>
+            <p className="text-muted-foreground">
+              No foods match "{searchQuery}". Try a different search term.
+            </p>
+            <Button variant="outline" onClick={() => setSearchQuery('')} className="mt-4">
+              Clear Search
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredCategories.map((category) => {
+            const recommended = isFoodRecommended(category.title, fitnessPlan);
+            return (
+              <Card key={category.title} className={`border-border bg-card ${recommended ? 'ring-2 ring-primary/50' : ''}`}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                      {iconMap[category.icon] || <Leaf className="h-5 w-5" />}
                     </div>
-                    <p className="text-sm text-muted-foreground">{category.description}</p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-3">
-                  {category.foods.map((food) => (
-                    <div key={food.name} className="p-3 rounded-lg bg-muted/50 space-y-2">
-                      <div className="flex gap-3">
-                        {/* Food Image */}
-                        <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-                          <img 
-                            src={getFoodImage(food.name)} 
-                            alt={food.name}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-medium text-foreground truncate">{food.name}</span>
-                            <div className="flex items-center gap-1 flex-shrink-0">
-                              <FoodVideoPlayer 
-                                foodName={food.name}
-                                calories={food.calories}
-                                protein={food.protein}
-                                carbs={food.carbs}
-                                fats={food.fats}
-                              />
-                              <Badge variant={food.isHealthy ? "default" : "destructive"} className="text-xs">
-                                {food.isHealthy ? "Healthy" : "Moderate"}
-                              </Badge>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-4 gap-2 text-xs text-muted-foreground mt-1">
-                            <div>
-                              <span className="font-medium text-foreground">{food.calories}</span>
-                              <span className="block">cal</span>
-                            </div>
-                            <div>
-                              <span className="font-medium text-foreground">{food.protein}g</span>
-                              <span className="block">protein</span>
-                            </div>
-                            <div>
-                              <span className="font-medium text-foreground">{food.carbs}g</span>
-                              <span className="block">carbs</span>
-                            </div>
-                            <div>
-                              <span className="font-medium text-foreground">{food.fats}g</span>
-                              <span className="block">fats</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {food.benefits.map((benefit) => (
-                          <Badge key={benefit} variant="outline" className="text-xs">
-                            {benefit}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-lg text-card-foreground">{category.title}</CardTitle>
+                        {recommended && (
+                          <Badge className="bg-primary text-primary-foreground text-xs">
+                            <Star className="h-3 w-3 mr-1" />
+                            Recommended
                           </Badge>
-                        ))}
+                        )}
                       </div>
+                      <p className="text-sm text-muted-foreground">{category.description}</p>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    {category.foods.map((food) => (
+                      <div key={food.name} className="p-3 rounded-lg bg-muted/50 space-y-2">
+                        <div className="flex gap-3">
+                          {/* Food Image */}
+                          <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+                            <img 
+                              src={getFoodImage(food.name)} 
+                              alt={food.name}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-medium text-foreground truncate">{food.name}</span>
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                <FoodVideoPlayer 
+                                  foodName={food.name}
+                                  calories={food.calories}
+                                  protein={food.protein}
+                                  carbs={food.carbs}
+                                  fats={food.fats}
+                                />
+                                <Badge variant={food.isHealthy ? "default" : "destructive"} className="text-xs">
+                                  {food.isHealthy ? "Healthy" : "Moderate"}
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2 text-xs text-muted-foreground mt-1">
+                              <div>
+                                <span className="font-medium text-foreground">{food.calories}</span>
+                                <span className="block">cal</span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-foreground">{food.protein}g</span>
+                                <span className="block">protein</span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-foreground">{food.carbs}g</span>
+                                <span className="block">carbs</span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-foreground">{food.fats}g</span>
+                                <span className="block">fats</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {food.benefits.map((benefit) => (
+                            <Badge key={benefit} variant="outline" className="text-xs">
+                              {benefit}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
