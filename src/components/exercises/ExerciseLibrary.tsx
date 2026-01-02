@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useExercises } from '@/hooks/useExercises';
 import { ExerciseCard } from './ExerciseCard';
 import { ExerciseFilters } from './ExerciseFilters';
 import { FittFilter } from '@/types/exercise';
-import { Loader2, Dumbbell, Target, Zap, Clock, Calendar } from 'lucide-react';
+import { Loader2, Dumbbell, Target, Zap, Clock, Calendar, Search, X } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface ExerciseLibraryProps {
   isGuest?: boolean;
@@ -13,7 +15,23 @@ interface ExerciseLibraryProps {
 
 export const ExerciseLibrary = ({ isGuest = false }: ExerciseLibraryProps) => {
   const [filters, setFilters] = useState<FittFilter>({});
+  const [searchQuery, setSearchQuery] = useState('');
   const { exercises, loading, error } = useExercises(filters);
+
+  // Filter exercises by search query
+  const filteredExercises = useMemo(() => {
+    if (!searchQuery.trim()) return exercises;
+    
+    const query = searchQuery.toLowerCase().trim();
+    return exercises.filter(exercise => 
+      exercise.name.toLowerCase().includes(query) ||
+      exercise.description?.toLowerCase().includes(query) ||
+      exercise.category.toLowerCase().includes(query) ||
+      exercise.type.toLowerCase().includes(query) ||
+      exercise.muscle_groups.some(mg => mg.toLowerCase().includes(query)) ||
+      exercise.equipment.some(eq => eq.toLowerCase().includes(query))
+    );
+  }, [exercises, searchQuery]);
 
   if (loading) {
     return (
@@ -53,6 +71,35 @@ export const ExerciseLibrary = ({ isGuest = false }: ExerciseLibraryProps) => {
           Discover 500+ exercises organized by the FITT principle (Frequency, Intensity, Time, Type) 
           with detailed instructions, equipment needs, and difficulty levels.
         </p>
+
+        {/* Search Bar */}
+        <div className="max-w-xl mx-auto mt-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search exercises by name, muscle group, equipment..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10 h-12 text-base"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          {searchQuery && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Found {filteredExercises.length} exercise{filteredExercises.length !== 1 ? 's' : ''} matching "{searchQuery}"
+            </p>
+          )}
+        </div>
         
         {/* FITT Principle Explanation */}
         <Card className="max-w-4xl mx-auto">
@@ -96,21 +143,21 @@ export const ExerciseLibrary = ({ isGuest = false }: ExerciseLibraryProps) => {
       <ExerciseFilters 
         filters={filters} 
         onFiltersChange={setFilters}
-        totalExercises={exercises.length}
+        totalExercises={filteredExercises.length}
       />
 
       {/* Exercise Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-primary">{exercises.length}</div>
+            <div className="text-2xl font-bold text-primary">{filteredExercises.length}</div>
             <div className="text-sm text-muted-foreground">Total Exercises</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-green-600">
-              {exercises.filter(e => e.difficulty_level === 'beginner').length}
+              {filteredExercises.filter(e => e.difficulty_level === 'beginner').length}
             </div>
             <div className="text-sm text-muted-foreground">Beginner</div>
           </CardContent>
@@ -118,7 +165,7 @@ export const ExerciseLibrary = ({ isGuest = false }: ExerciseLibraryProps) => {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-yellow-600">
-              {exercises.filter(e => e.difficulty_level === 'intermediate').length}
+              {filteredExercises.filter(e => e.difficulty_level === 'intermediate').length}
             </div>
             <div className="text-sm text-muted-foreground">Intermediate</div>
           </CardContent>
@@ -126,7 +173,7 @@ export const ExerciseLibrary = ({ isGuest = false }: ExerciseLibraryProps) => {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-red-600">
-              {exercises.filter(e => e.difficulty_level === 'professional').length}
+              {filteredExercises.filter(e => e.difficulty_level === 'professional').length}
             </div>
             <div className="text-sm text-muted-foreground">Professional</div>
           </CardContent>
@@ -134,19 +181,27 @@ export const ExerciseLibrary = ({ isGuest = false }: ExerciseLibraryProps) => {
       </div>
 
       {/* Exercise Grid */}
-      {exercises.length === 0 ? (
+      {filteredExercises.length === 0 ? (
         <Card className="text-center p-8">
           <CardContent>
             <Dumbbell className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-lg font-semibold mb-2">No exercises found</h3>
             <p className="text-muted-foreground">
-              Try adjusting your filters to see more exercises.
+              {searchQuery 
+                ? `No exercises match "${searchQuery}". Try a different search term.`
+                : 'Try adjusting your filters to see more exercises.'
+              }
             </p>
+            {searchQuery && (
+              <Button variant="outline" onClick={() => setSearchQuery('')} className="mt-4">
+                Clear Search
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {(isGuest ? exercises.slice(0, 10) : exercises).map((exercise) => (
+          {(isGuest ? filteredExercises.slice(0, 10) : filteredExercises).map((exercise) => (
             <ExerciseCard key={exercise.id} exercise={exercise} />
           ))}
         </div>
