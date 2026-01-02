@@ -58,6 +58,12 @@ const AppHeader = ({ title, showTitle = true }: AppHeaderProps) => {
                   Vitals
                 </Button>
               </Link>
+              <Link to="/home?section=fitness-goal" onClick={() => setSheetOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start min-h-[44px]">
+                  <Target className="h-5 w-5 mr-3" />
+                  Fitness Goal
+                </Button>
+              </Link>
               <Link to="/home?section=about-us" onClick={() => setSheetOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start min-h-[44px]">
                   <Zap className="h-5 w-5 mr-3" />

@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
 import { Question } from "@/data/onboardingQuestions";
 import { cn } from "@/lib/utils";
 
@@ -31,21 +32,35 @@ const DynamicQuestionScreen = ({
   const [textAnswer, setTextAnswer] = useState("");
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [otherText, setOtherText] = useState("");
+  const [showOther, setShowOther] = useState(false);
 
   // Reset state when question changes
   useEffect(() => {
     setTextAnswer("");
     setSelectedOption("");
     setSelectedOptions([]);
+    setOtherText("");
+    setShowOther(false);
   }, [question.id]);
 
   const handleNext = () => {
     if (question.type === "text") {
       onNext(textAnswer);
     } else if (question.type === "multi-choice") {
-      onNext(selectedOptions);
+      // Include "other" answer if provided
+      const answers = [...selectedOptions];
+      if (showOther && otherText.trim()) {
+        answers.push(`Other: ${otherText.trim()}`);
+      }
+      onNext(answers);
     } else {
-      onNext(selectedOption);
+      // Single choice - include other text if selected
+      if (selectedOption === "other" && otherText.trim()) {
+        onNext(`Other: ${otherText.trim()}`);
+      } else {
+        onNext(selectedOption);
+      }
     }
   };
 
@@ -58,6 +73,10 @@ const DynamicQuestionScreen = ({
   };
 
   const toggleMultiOption = (value: string) => {
+    if (value === "other") {
+      setShowOther(!showOther);
+      return;
+    }
     setSelectedOptions((prev) =>
       prev.includes(value)
         ? prev.filter((v) => v !== value)
@@ -65,12 +84,25 @@ const DynamicQuestionScreen = ({
     );
   };
 
+  const handleSingleChoice = (value: string) => {
+    setSelectedOption(value);
+    if (value !== "other") {
+      setShowOther(false);
+      setOtherText("");
+    } else {
+      setShowOther(true);
+    }
+  };
+
   const isValid = () => {
     if (question.type === "text") {
       return textAnswer.trim().length > 0;
     } else if (question.type === "multi-choice") {
-      return selectedOptions.length > 0;
+      return selectedOptions.length > 0 || (showOther && otherText.trim().length > 0);
     } else {
+      if (selectedOption === "other") {
+        return otherText.trim().length > 0;
+      }
       return selectedOption.length > 0;
     }
   };
@@ -118,7 +150,7 @@ const DynamicQuestionScreen = ({
         {question.type === "choice" && question.options && (
           <RadioGroup
             value={selectedOption}
-            onValueChange={setSelectedOption}
+            onValueChange={handleSingleChoice}
             className="w-full space-y-3"
           >
             {question.options.map((option) => (
@@ -130,7 +162,7 @@ const DynamicQuestionScreen = ({
                     ? "border-primary bg-primary/5"
                     : "border-border hover:border-primary/50"
                 )}
-                onClick={() => setSelectedOption(option.value)}
+                onClick={() => handleSingleChoice(option.value)}
               >
                 <RadioGroupItem value={option.value} id={option.value} />
                 <Label
@@ -141,6 +173,38 @@ const DynamicQuestionScreen = ({
                 </Label>
               </div>
             ))}
+            
+            {/* Other option for single choice */}
+            <div
+              className={cn(
+                "flex items-center space-x-3 p-4 rounded-lg border transition-all cursor-pointer",
+                selectedOption === "other"
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary/50"
+              )}
+              onClick={() => handleSingleChoice("other")}
+            >
+              <RadioGroupItem value="other" id="other-choice" />
+              <Label
+                htmlFor="other-choice"
+                className="text-base cursor-pointer flex-1"
+              >
+                Other (please specify)
+              </Label>
+            </div>
+            
+            {/* Other text input for single choice */}
+            {showOther && selectedOption === "other" && (
+              <div className="pl-8 animate-fade-in">
+                <Input
+                  value={otherText}
+                  onChange={(e) => setOtherText(e.target.value)}
+                  placeholder="Please specify..."
+                  className="w-full"
+                  autoFocus
+                />
+              </div>
+            )}
           </RadioGroup>
         )}
 
@@ -175,6 +239,43 @@ const DynamicQuestionScreen = ({
                 </Label>
               </div>
             ))}
+            
+            {/* Other option for multi choice */}
+            <div
+              className={cn(
+                "flex items-center space-x-3 p-4 rounded-lg border transition-all cursor-pointer",
+                showOther
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary/50"
+              )}
+              onClick={() => toggleMultiOption("other")}
+            >
+              <Checkbox
+                checked={showOther}
+                onCheckedChange={() => toggleMultiOption("other")}
+                id="other-multi"
+                onClick={(e) => e.stopPropagation()}
+              />
+              <Label
+                htmlFor="other-multi"
+                className="text-base cursor-pointer flex-1"
+              >
+                Other (please specify)
+              </Label>
+            </div>
+            
+            {/* Other text input for multi choice */}
+            {showOther && (
+              <div className="pl-8 animate-fade-in">
+                <Input
+                  value={otherText}
+                  onChange={(e) => setOtherText(e.target.value)}
+                  placeholder="Please specify..."
+                  className="w-full"
+                  autoFocus
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
