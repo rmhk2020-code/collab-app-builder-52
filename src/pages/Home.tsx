@@ -3,7 +3,7 @@ import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Target, Zap, TrendingUp, Calendar, Clock, Dumbbell, CheckCircle, Flame, Apple, Smile, Frown, Meh, Heart, Sparkles, RefreshCw } from "lucide-react";
+import { Target, Zap, TrendingUp, Calendar, Clock, Dumbbell, CheckCircle, Flame, Apple, Smile, Frown, Meh, Heart, Sparkles, RefreshCw, Info } from "lucide-react";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import { useUserData } from "@/hooks/useUserData";
 import { supabase } from "@/integrations/supabase/client";
@@ -408,60 +408,102 @@ const Home = () => {
           </section>
         )}
 
-        {activeSection === "what-we-offer" && (
+        {activeSection === "about-us" && (
           <section className="animate-fade-in">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 rounded-full bg-primary/20">
                 <Zap className="h-5 w-5 text-primary" />
               </div>
-              <h2 className="text-2xl font-semibold text-foreground">What Do We Offer</h2>
+              <h2 className="text-2xl md:text-3xl font-semibold text-foreground">About Us</h2>
             </div>
 
-            <p className="text-muted-foreground mb-8">
+            {/* Founder Story */}
+            <Card className="bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 border-primary/20 mb-8 shadow-lg">
+              <CardContent className="py-8">
+                <div className="flex flex-col md:flex-row gap-6 items-start">
+                  <div className="p-4 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 shrink-0">
+                    <Heart className="h-10 w-10 text-primary" />
+                  </div>
+                  <div className="space-y-4">
+                    <h3 className="text-xl md:text-2xl font-bold text-foreground">Our Story</h3>
+                    <p className="text-lg md:text-xl leading-relaxed text-muted-foreground">
+                      In 2025, a 15-year-old boy with a passion for fitness and technology saw a problem that needed solving. 
+                      Watching his friends and family struggle to afford gym memberships, personal trainers, and expensive 
+                      nutrition apps, he realized that getting healthy shouldn't cost a fortune.
+                    </p>
+                    <p className="text-lg md:text-xl leading-relaxed text-muted-foreground">
+                      Armed with nothing but a laptop, determination, and countless hours of research, he built <strong className="text-primary">Health Kinetics</strong> — 
+                      a platform designed to make fitness accessible to everyone. The idea was simple: combine the science of the 
+                      FITT principle (Frequency, Intensity, Time, Type) with AI-powered nutrition analysis to create something 
+                      that works for real people with real budgets.
+                    </p>
+                    <p className="text-lg md:text-xl leading-relaxed text-muted-foreground">
+                      What started as a school project quickly became a mission. Today, Health Kinetics helps thousands of people 
+                      achieve their fitness goals without breaking the bank. From personalized workout plans to smart food scanning, 
+                      every feature was designed with one goal in mind: <em className="text-primary">making health affordable for everyone</em>.
+                    </p>
+                    <div className="pt-4 border-t border-border">
+                      <p className="text-base text-foreground font-medium italic">
+                        "I believe everyone deserves to be healthy, no matter their budget. That's why I built Health Kinetics — 
+                        to prove that you don't need expensive gym memberships or personal trainers to transform your life."
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-2">— The Founder, Age 15</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <h3 className="text-xl md:text-2xl font-semibold text-foreground mb-6 flex items-center gap-2">
+              <Sparkles className="h-6 w-6 text-primary" />
+              What We Offer
+            </h3>
+
+            <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
               We combine the FITT principle (Frequency, Intensity, Time, Type) with personalized 
-              nutrition to create comprehensive programs for every athlete level
+              nutrition to create comprehensive programs for every athlete level — all completely free.
             </p>
             
             <div className="grid md:grid-cols-3 gap-6">
-              <Card className="border-border bg-card">
+              <Card className="border-border bg-card hover:shadow-lg transition-all duration-300 hover:border-primary/30">
                 <CardHeader className="text-center">
-                  <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                    <Target className="h-6 w-6 text-primary" />
+                  <div className="mx-auto w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mb-2">
+                    <Target className="h-7 w-7 text-primary" />
                   </div>
-                  <CardTitle className="text-card-foreground">Set Your Goals</CardTitle>
+                  <CardTitle className="text-card-foreground text-lg">Set Your Goals</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground text-center">
-                    Define your athletic requirements - whether building strength, improving endurance, 
+                  <p className="text-muted-foreground text-center text-base leading-relaxed">
+                    Define your athletic requirements — whether building strength, improving endurance, 
                     or achieving specific performance targets
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border-border bg-card">
+              <Card className="border-border bg-card hover:shadow-lg transition-all duration-300 hover:border-primary/30">
                 <CardHeader className="text-center">
-                  <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                    <Zap className="h-6 w-6 text-primary" />
+                  <div className="mx-auto w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mb-2">
+                    <Zap className="h-7 w-7 text-primary" />
                   </div>
-                  <CardTitle className="text-card-foreground">Personalized Plans</CardTitle>
+                  <CardTitle className="text-card-foreground text-lg">Personalized Plans</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground text-center">
+                  <p className="text-muted-foreground text-center text-base leading-relaxed">
                     Get customized exercise routines with varied intensity levels, frequencies, 
                     and durations matched with optimal nutrition
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border-border bg-card">
+              <Card className="border-border bg-card hover:shadow-lg transition-all duration-300 hover:border-primary/30">
                 <CardHeader className="text-center">
-                  <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                    <TrendingUp className="h-6 w-6 text-primary" />
+                  <div className="mx-auto w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mb-2">
+                    <TrendingUp className="h-7 w-7 text-primary" />
                   </div>
-                  <CardTitle className="text-card-foreground">Track Progress</CardTitle>
+                  <CardTitle className="text-card-foreground text-lg">Track Progress</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground text-center">
+                  <p className="text-muted-foreground text-center text-base leading-relaxed">
                     Monitor your improvements and adjust your program as you progress 
                     toward your athletic goals
                   </p>

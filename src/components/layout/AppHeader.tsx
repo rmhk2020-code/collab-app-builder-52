@@ -28,7 +28,7 @@ const AppHeader = ({ title, showTitle = true }: AppHeaderProps) => {
                 <img 
                   src={healthKineticsLogo} 
                   alt="Health Kinetics Logo" 
-                  className="w-12 h-12 object-contain"
+                  className="w-16 h-16 object-contain"
                 />
                 <SheetTitle className="text-left">Menu</SheetTitle>
               </div>
@@ -58,10 +58,10 @@ const AppHeader = ({ title, showTitle = true }: AppHeaderProps) => {
                   Vitals
                 </Button>
               </Link>
-              <Link to="/home?section=what-we-offer" onClick={() => setSheetOpen(false)}>
+              <Link to="/home?section=about-us" onClick={() => setSheetOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start min-h-[44px]">
                   <Zap className="h-5 w-5 mr-3" />
-                  What Do We Offer
+                  About Us
                 </Button>
               </Link>
             </nav>
@@ -75,7 +75,7 @@ const AppHeader = ({ title, showTitle = true }: AppHeaderProps) => {
             <img 
               src={healthKineticsLogo} 
               alt="Health Kinetics" 
-              className="h-10 object-contain"
+              className="h-14 object-contain"
             />
           )
         )}
