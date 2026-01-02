@@ -8,8 +8,10 @@ import { CheckCircle, Target, Calendar, Clock, Plus, Edit2, Check, X } from "luc
 import { ExerciseLibrary } from "@/components/exercises/ExerciseLibrary";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import AppHeader from "@/components/layout/AppHeader";
+import { useTranslation } from "@/i18n/TranslationContext";
 
 const Exercises = () => {
+  const { t } = useTranslation();
   const { 
     fitnessPlan, 
     exercisesCompletedToday, 
@@ -58,7 +60,7 @@ const Exercises = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader title="Exercises" />
+      <AppHeader title={t("exercises")} />
 
       {/* Progress Tracking Bar - Hidden for guests */}
       {!isGuest && (
@@ -67,11 +69,11 @@ const Exercises = () => {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Target className="h-5 w-5 text-primary" />
-                <span className="font-medium text-foreground">Workout Progress</span>
+                <span className="font-medium text-foreground">{t("workoutProgress")}</span>
               </div>
               <div className="flex items-center gap-2">
                 {fitnessPlan && (
-                  <span className="text-sm text-muted-foreground hidden md:inline">Goal: {fitnessPlan.goal}</span>
+                  <span className="text-sm text-muted-foreground hidden md:inline">{t("fitnessGoal")}: {fitnessPlan.goal}</span>
                 )}
                 <Button 
                   onClick={handleQuickAdd}
@@ -79,7 +81,7 @@ const Exercises = () => {
                   className="min-h-[44px] min-w-[44px] px-3 active:scale-[0.98] transition-transform"
                 >
                   <Plus className="h-4 w-4 mr-1" />
-                  <span className="hidden sm:inline">Log Workout</span>
+                  <span className="hidden sm:inline">{t("logWorkout")}</span>
                 </Button>
               </div>
             </div>
@@ -91,7 +93,7 @@ const Exercises = () => {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <CheckCircle className={`h-4 w-4 ${dailyProgress >= 100 ? 'text-emerald-500' : 'text-muted-foreground'}`} />
-                      <span className="text-sm font-medium">Today</span>
+                      <span className="text-sm font-medium">{t("today")}</span>
                     </div>
                     {editingDaily ? (
                       <div className="flex items-center gap-1">
@@ -134,7 +136,7 @@ const Exercises = () => {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Calendar className={`h-4 w-4 ${weeklyProgress >= 100 ? 'text-emerald-500' : 'text-muted-foreground'}`} />
-                      <span className="text-sm font-medium">This Week</span>
+                      <span className="text-sm font-medium">{t("thisWeek")}</span>
                     </div>
                     {editingWeekly ? (
                       <div className="flex items-center gap-1">
@@ -177,7 +179,7 @@ const Exercises = () => {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Clock className={`h-4 w-4 ${monthlyProgress >= 100 ? 'text-emerald-500' : 'text-muted-foreground'}`} />
-                      <span className="text-sm font-medium">This Month</span>
+                      <span className="text-sm font-medium">{t("thisMonth")}</span>
                     </div>
                     {editingMonthly ? (
                       <div className="flex items-center gap-1">
@@ -223,7 +225,7 @@ const Exercises = () => {
         <div className="bg-amber-500/10 border-b border-amber-500/20 py-3 px-4">
           <div className="container mx-auto max-w-6xl text-center">
             <p className="text-sm text-amber-600 dark:text-amber-400">
-              Guest preview: Showing 10 exercises. <Link to="/auth" className="underline font-medium">Sign in</Link> for full access and progress tracking!
+              {t("guestPreview")} <Link to="/auth" className="underline font-medium">{t("signIn")}</Link> {t("signInForFullAccess")}
             </p>
           </div>
         </div>
