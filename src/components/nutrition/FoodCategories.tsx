@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Brain, Heart, Dumbbell, Zap, Eye, Bone, Shield, Leaf, Sparkles, Scale, Flame, Moon, Star, Search, X } from "lucide-react";
 import { foodCategories, getFoodImage, FoodItem } from "@/data/foodData";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { FoodVideoPlayer } from "./FoodVideoPlayer";
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -39,33 +40,89 @@ const isFoodRecommended = (categoryTitle: string, fitnessPlan: any): boolean => 
   return false;
 };
 
+// Check if food matches dietary preferences
+const foodMatchesDiet = (food: FoodItem, dietaryPreferences: string[], allergies: string[]): boolean => {
+  // Check allergies - if food name contains any allergen, exclude it
+  const foodNameLower = food.name.toLowerCase();
+  for (const allergen of allergies) {
+    if (foodNameLower.includes(allergen.toLowerCase())) {
+      return false;
+    }
+  }
+  
+  // If no dietary preferences set, show all foods
+  if (dietaryPreferences.length === 0) return true;
+  
+  // Simple diet matching based on food properties
+  const benefitsLower = food.benefits.map(b => b.toLowerCase()).join(' ');
+  
+  // Vegan/vegetarian filtering (basic heuristic)
+  const meatKeywords = ['chicken', 'beef', 'pork', 'fish', 'salmon', 'tuna', 'shrimp', 'meat', 'turkey'];
+  const dairyKeywords = ['milk', 'cheese', 'yogurt', 'dairy'];
+  const isMeat = meatKeywords.some(k => foodNameLower.includes(k));
+  const isDairy = dairyKeywords.some(k => foodNameLower.includes(k));
+  
+  if (dietaryPreferences.includes('vegan') && (isMeat || isDairy)) return false;
+  if (dietaryPreferences.includes('vegetarian') && isMeat) return false;
+  if (dietaryPreferences.includes('dairy-free') && isDairy) return false;
+  
+  // High protein preference
+  if (dietaryPreferences.includes('high-protein') && food.protein < 15) return false;
+  
+  // Low carb preference
+  if (dietaryPreferences.includes('low-carb') && food.carbs > 20) return false;
+  
+  return true;
+};
+
 export const FoodCategories = () => {
   const { isGuest, fitnessPlan } = useFitnessPlan();
+  const { dietSettings } = useSettings();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter categories and foods by search query
+  // Filter categories and foods by search query AND diet settings
   const filteredCategories = useMemo(() => {
     const categories = isGuest 
       ? [{ ...foodCategories[0], foods: foodCategories[0].foods.slice(0, 5) }]
       : foodCategories;
 
-    if (!searchQuery.trim()) return categories;
-    
-    const query = searchQuery.toLowerCase().trim();
-    
-    return categories
-      .map(category => {
-        // Filter foods within each category
-        const filteredFoods = category.foods.filter(food =>
+    let result = categories.map(category => {
+      // Filter foods based on dietary preferences and allergies
+      let filteredFoods = dietSettings.showRecommendedFoods
+        ? category.foods.filter(food => 
+            foodMatchesDiet(food, dietSettings.dietaryPreferences, dietSettings.allergies)
+          )
+        : category.foods;
+
+      // Apply search query filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        filteredFoods = filteredFoods.filter(food =>
           food.name.toLowerCase().includes(query) ||
           food.benefits.some(benefit => benefit.toLowerCase().includes(query)) ||
           category.title.toLowerCase().includes(query)
         );
-        
-        return { ...category, foods: filteredFoods };
-      })
-      .filter(category => category.foods.length > 0);
-  }, [isGuest, searchQuery]);
+      }
+
+      return { ...category, foods: filteredFoods };
+    });
+
+    // Filter out empty categories
+    result = result.filter(category => category.foods.length > 0);
+
+    // Sort recommended categories first if showRecommendedFoods is enabled
+    if (dietSettings.showRecommendedFoods && fitnessPlan) {
+      result = [...result].sort((a, b) => {
+        const aRecommended = isFoodRecommended(a.title, fitnessPlan);
+        const bRecommended = isFoodRecommended(b.title, fitnessPlan);
+        if (aRecommended && !bRecommended) return -1;
+        if (bRecommended && !aRecommended) return 1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [isGuest, searchQuery, dietSettings, fitnessPlan]);
 
   // Count total foods for display
   const totalFoods = useMemo(() => {
