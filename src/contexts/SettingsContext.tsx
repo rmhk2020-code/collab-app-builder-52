@@ -268,25 +268,46 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const loadAllSettings = (settings: Partial<AllSettings>) => {
-    if (settings.userProfile) setUserProfile(settings.userProfile);
-    if (settings.fitnessPlanSettings) setFitnessPlanSettings(settings.fitnessPlanSettings);
-    if (settings.exerciseSettings) setExerciseSettings(settings.exerciseSettings);
-    if (settings.dietSettings) setDietSettings(settings.dietSettings);
-    if (settings.trackingSettings) setTrackingSettings(settings.trackingSettings);
-    if (settings.notificationSettings) setNotificationSettings(settings.notificationSettings);
-    
-    // For appPreferences, prioritize localStorage theme over database settings
-    if (settings.appPreferences) {
+    const readLocal = <T,>(key: string): T | null => {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      try {
+        return JSON.parse(raw) as T;
+      } catch {
+        return null;
+      }
+    };
+
+    const localUserProfile = readLocal<UserProfile>("userProfile");
+    const localFitnessPlanSettings = readLocal<FitnessPlanSettings>("fitnessPlanSettings");
+    const localExerciseSettings = readLocal<ExerciseSettings>("exerciseSettings");
+    const localDietSettings = readLocal<DietSettings>("dietSettings");
+    const localTrackingSettings = readLocal<TrackingSettings>("trackingSettings");
+    const localNotificationSettings = readLocal<NotificationSettings>("notificationSettings");
+    const localPrivacySettings = readLocal<PrivacySettings>("privacySettings");
+    const localAppPreferences = readLocal<AppPreferences>("appPreferences");
+
+    // Prefer localStorage if it exists (prevents DB defaults from overwriting recent changes)
+    if (settings.userProfile || localUserProfile) setUserProfile(localUserProfile ?? settings.userProfile!);
+    if (settings.fitnessPlanSettings || localFitnessPlanSettings) setFitnessPlanSettings(localFitnessPlanSettings ?? settings.fitnessPlanSettings!);
+    if (settings.exerciseSettings || localExerciseSettings) setExerciseSettings(localExerciseSettings ?? settings.exerciseSettings!);
+    if (settings.dietSettings || localDietSettings) setDietSettings(localDietSettings ?? settings.dietSettings!);
+    if (settings.trackingSettings || localTrackingSettings) setTrackingSettings(localTrackingSettings ?? settings.trackingSettings!);
+    if (settings.notificationSettings || localNotificationSettings) setNotificationSettings(localNotificationSettings ?? settings.notificationSettings!);
+
+    // For appPreferences, prefer localStorage (including font size), but always respect saved theme.
+    if (settings.appPreferences || localAppPreferences) {
       const localTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-      const mergedPrefs = {
-        ...settings.appPreferences,
-        // Keep local theme if it exists, otherwise use database value
-        theme: localTheme || settings.appPreferences.theme || "dark",
+      const base = settings.appPreferences ?? appPreferences;
+      const mergedPrefs: AppPreferences = {
+        ...base,
+        ...(localAppPreferences ?? {}),
+        theme: (localAppPreferences?.theme ?? localTheme ?? base.theme ?? "dark") as "light" | "dark",
       };
       setAppPreferences(mergedPrefs);
     }
-    
-    if (settings.privacySettings) setPrivacySettings(settings.privacySettings);
+
+    if (settings.privacySettings || localPrivacySettings) setPrivacySettings(localPrivacySettings ?? settings.privacySettings!);
   };
 
   return (
