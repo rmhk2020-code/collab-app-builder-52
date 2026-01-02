@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { FitnessPlanProvider } from "@/contexts/FitnessPlanContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { HealthVitalsProvider } from "@/contexts/HealthVitalsContext";
+import { TranslationProvider } from "@/i18n/TranslationContext";
 import Onboarding from "./pages/Onboarding";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
@@ -24,31 +25,33 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <SettingsProvider>
-      <HealthVitalsProvider>
-        <FitnessPlanProvider>
-          <TooltipProvider>
-            <SettingsApplier />
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Auth />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/set-password" element={<SetPassword />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/home" element={<Home />} />
-                <Route path="/exercises" element={<Exercises />} />
-                <Route path="/nutrition" element={<Nutrition />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/health" element={<Health />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </FitnessPlanProvider>
-      </HealthVitalsProvider>
+      <TranslationProvider>
+        <HealthVitalsProvider>
+          <FitnessPlanProvider>
+            <TooltipProvider>
+              <SettingsApplier />
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Auth />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/set-password" element={<SetPassword />} />
+                  <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/exercises" element={<Exercises />} />
+                  <Route path="/nutrition" element={<Nutrition />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/health" element={<Health />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </FitnessPlanProvider>
+        </HealthVitalsProvider>
+      </TranslationProvider>
     </SettingsProvider>
   </QueryClientProvider>
 );
