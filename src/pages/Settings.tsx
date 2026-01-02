@@ -1306,11 +1306,10 @@ const Settings = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Language <Badge variant="outline" className="ml-2 text-xs">Coming Soon</Badge></Label>
+                  <Label>Language</Label>
                   <Select
                     value={appPreferences.language}
                     onValueChange={(value) => setAppPreferences({ ...appPreferences, language: value })}
-                    disabled
                   >
                     <SelectTrigger className="min-h-[44px]">
                       <SelectValue />
@@ -1322,7 +1321,7 @@ const Settings = () => {
                       <SelectItem value="de">Deutsch</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">Full translation support coming in a future update</p>
+                  <p className="text-xs text-muted-foreground">Change the language for all app text</p>
                 </div>
 
                 <Separator />

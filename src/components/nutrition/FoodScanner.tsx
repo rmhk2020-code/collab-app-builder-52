@@ -129,13 +129,16 @@ export const FoodScanner = () => {
       const dietaryRestrictions = dietSettings.dietaryPreferences.join(", ") || "none";
       const allergies = dietSettings.allergies.join(", ") || "none";
       
+      const supabaseUrl = "https://kkvudqvxcjchzehrptvy.supabase.co";
+      const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrdnVkcXZ4Y2pjaHplaHJwdHZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzNDIzMDYsImV4cCI6MjA3MzkxODMwNn0.28c5wYiUB9Wm1zj3PVN4SlXFO9egiNNrQoiV-KVKJCM";
+      
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-food`,
+        `${supabaseUrl}/functions/v1/analyze-food`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${supabaseKey}`,
           },
           body: JSON.stringify({
             imageBase64,
