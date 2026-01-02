@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
+import { useUserData } from "@/hooks/useUserData";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -82,6 +83,9 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState("account");
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  // Enable auto-sync to Supabase when settings change
+  useUserData();
 
   // Password change states
   const [passwordStep, setPasswordStep] = useState<"idle" | "code" | "newPassword" | "success">("idle");
