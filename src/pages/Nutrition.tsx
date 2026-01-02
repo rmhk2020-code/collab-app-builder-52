@@ -9,8 +9,10 @@ import { FoodCategories } from "@/components/nutrition/FoodCategories";
 import { FoodScanner } from "@/components/nutrition/FoodScanner";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import AppHeader from "@/components/layout/AppHeader";
+import { useTranslation } from "@/i18n/TranslationContext";
 
 const Nutrition = () => {
+  const { t } = useTranslation();
   const { 
     fitnessPlan, 
     caloriesEaten, 
@@ -49,7 +51,7 @@ const Nutrition = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <AppHeader title="Nutrition" />
+      <AppHeader title={t("nutrition")} />
 
       {/* Calorie Tracking Bar - Hidden for guests */}
       {!isGuest && (
@@ -64,7 +66,7 @@ const Nutrition = () => {
                 {fitnessPlan && (
                   <div className="flex items-center gap-2">
                     <Target className="h-5 w-5 text-emerald-500" />
-                    <span className="text-sm text-muted-foreground hidden sm:inline">Goal: {fitnessPlan.goal}</span>
+                    <span className="text-sm text-muted-foreground hidden sm:inline">{t("fitnessGoal")}: {fitnessPlan.goal}</span>
                   </div>
                 )}
               </div>
@@ -74,7 +76,7 @@ const Nutrition = () => {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Flame className="h-4 w-4 text-orange-500" />
-                      <span className="text-sm font-medium">Today's Calories</span>
+                      <span className="text-sm font-medium">{t("todaysCalories")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {editingCalories ? (
@@ -149,7 +151,7 @@ const Nutrition = () => {
                     <div className="flex items-center gap-2">
                       <Input
                         type="number"
-                        placeholder="Add kcal"
+                        placeholder={t("addKcal")}
                         value={quickAddAmount}
                         onChange={(e) => setQuickAddAmount(e.target.value)}
                         className="w-24 h-8 text-sm"
@@ -161,13 +163,13 @@ const Nutrition = () => {
                         className="h-8 min-h-[32px] px-3 active:scale-[0.98] transition-transform"
                       >
                         <Plus className="h-4 w-4 mr-1" />
-                        Add
+                        {t("add")}
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {dailyCalorieGoal - caloriesEaten > 0 
-                        ? `${dailyCalorieGoal - caloriesEaten} kcal remaining` 
-                        : 'Goal reached!'
+                        ? `${dailyCalorieGoal - caloriesEaten} ${t("kcalRemainingShort")}` 
+                        : t("dailyCalorieGoalReached")
                       }
                     </p>
                   </div>
@@ -183,7 +185,7 @@ const Nutrition = () => {
         <div className="bg-amber-500/10 border-b border-amber-500/20 py-3 px-4">
           <div className="container mx-auto max-w-6xl text-center">
             <p className="text-sm text-amber-600 dark:text-amber-400">
-              Guest preview: Showing 5 foods. <Link to="/auth" className="underline font-medium">Sign in</Link> for 300+ foods and calorie tracking!
+              {t("guestPreview")} <Link to="/auth" className="underline font-medium">{t("signIn")}</Link> {t("signInForFullAccess")}
             </p>
           </div>
         </div>
@@ -191,9 +193,9 @@ const Nutrition = () => {
 
       <div className="container mx-auto px-4 py-6">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Diet & Nutrition</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-4">{t("dietAndNutrition")}</h1>
           <p className="text-xl text-muted-foreground">
-            Fuel your athletic performance with smart, personalized nutrition
+            {t("fuelPerformance")}
           </p>
         </div>
 

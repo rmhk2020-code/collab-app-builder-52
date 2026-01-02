@@ -8,6 +8,7 @@ import { foodCategories, getFoodImage, FoodItem } from "@/data/foodData";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { FoodVideoPlayer } from "./FoodVideoPlayer";
+import { useTranslation } from "@/i18n/TranslationContext";
 
 const iconMap: Record<string, React.ReactNode> = {
   Brain: <Brain className="h-5 w-5" />,
@@ -76,6 +77,7 @@ const foodMatchesDiet = (food: FoodItem, dietaryPreferences: string[], allergies
 };
 
 export const FoodCategories = () => {
+  const { t } = useTranslation();
   const { isGuest, fitnessPlan } = useFitnessPlan();
   const { dietSettings } = useSettings();
   const [searchQuery, setSearchQuery] = useState('');
@@ -132,10 +134,10 @@ export const FoodCategories = () => {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-foreground mb-2">Foods by Body Benefit</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2">{t("foodsByBodyBenefit")}</h2>
         <p className="text-muted-foreground">
-          Discover foods that target specific areas of your health
-          {isGuest && <span className="block text-sm text-amber-500 mt-1">Guest preview: Showing 5 foods. Sign in for 300+ foods!</span>}
+          {t("discoverFoods")}
+          {isGuest && <span className="block text-sm text-amber-500 mt-1">{t("guestPreview")} {t("signInForFullAccess")}</span>}
         </p>
 
         {/* Search Bar */}
@@ -144,7 +146,7 @@ export const FoodCategories = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search foods by name, benefit, category..."
+              placeholder={t("searchFoods")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-10 h-12 text-base"

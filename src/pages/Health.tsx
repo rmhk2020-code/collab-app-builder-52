@@ -12,6 +12,7 @@ import { useHealthVitals } from "@/contexts/HealthVitalsContext";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import { toast } from "@/hooks/use-toast";
 import AppHeader from "@/components/layout/AppHeader";
+import { useTranslation } from "@/i18n/TranslationContext";
 import {
   LineChart,
   Line,
@@ -42,6 +43,7 @@ import {
 import { format } from "date-fns";
 
 const Health = () => {
+  const { t } = useTranslation();
   const {
     weightHistory,
     addWeightEntry,
@@ -248,7 +250,7 @@ const Health = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader title="Health Vitals" />
+      <AppHeader title={t("healthVitals")} />
 
       {/* Guest Banner */}
       {isGuest && (

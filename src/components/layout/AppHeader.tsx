@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dumbbell, Apple, Target, Zap, Activity, Settings, Menu } from "lucide-react";
 import healthKineticsLogo from "@/assets/health-kinetics-logo.png";
+import { useTranslation } from "@/i18n/TranslationContext";
 
 interface AppHeaderProps {
   title?: string;
@@ -12,6 +13,7 @@ interface AppHeaderProps {
 
 const AppHeader = ({ title, showTitle = true }: AppHeaderProps) => {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
@@ -30,38 +32,38 @@ const AppHeader = ({ title, showTitle = true }: AppHeaderProps) => {
                   alt="Health Kinetics Logo" 
                   className="w-16 h-16 object-contain"
                 />
-                <SheetTitle className="text-left">Menu</SheetTitle>
+                <SheetTitle className="text-left">{t("menu")}</SheetTitle>
               </div>
             </SheetHeader>
             <nav className="mt-6 flex flex-col gap-2">
               <Link to="/home?section=fitness-goal" onClick={() => setSheetOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start min-h-[44px]">
                   <Target className="h-5 w-5 mr-3" />
-                  Fitness Goal
+                  {t("fitnessGoal")}
                 </Button>
               </Link>
               <Link to="/exercises" onClick={() => setSheetOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start min-h-[44px]">
                   <Dumbbell className="h-5 w-5 mr-3" />
-                  Exercises
+                  {t("exercises")}
                 </Button>
               </Link>
               <Link to="/nutrition" onClick={() => setSheetOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start min-h-[44px]">
                   <Apple className="h-5 w-5 mr-3" />
-                  Nutrition
+                  {t("nutrition")}
                 </Button>
               </Link>
               <Link to="/health" onClick={() => setSheetOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start min-h-[44px]">
                   <Activity className="h-5 w-5 mr-3" />
-                  Vitals
+                  {t("vitals")}
                 </Button>
               </Link>
               <Link to="/home?section=about-us" onClick={() => setSheetOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start min-h-[44px]">
                   <Zap className="h-5 w-5 mr-3" />
-                  About Us
+                  {t("aboutUs")}
                 </Button>
               </Link>
             </nav>
