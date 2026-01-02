@@ -38,34 +38,43 @@ const Auth = () => {
   };
 
   useEffect(() => {
+    // Track if we're currently handling a signup to prevent double navigation
+    let isHandlingSignup = false;
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        setIsGuest(false);
-        setTimeout(() => {
-          // Always force OAuth users to set a password (not only on SIGNED_IN)
-          if (checkIfNeedsPassword(session.user)) {
-            navigate("/set-password");
-            return;
-          }
-
-          checkUserOnboardingStatus(session.user.id).then((hasCompletedOnboardingInDB) => {
-            if (hasCompletedOnboardingInDB) {
-              navigate("/home");
-            } else {
-              navigate("/onboarding");
+      // Skip if we're handling signup manually in handleEmailAuth
+      if (isHandlingSignup) return;
+      
+      // Only handle OAuth callbacks (not email signups which we handle manually)
+      if (event === "SIGNED_IN" && session?.user) {
+        const provider = session.user.app_metadata?.provider;
+        
+        // Only auto-navigate for OAuth users, not email signups
+        if (provider !== "email") {
+          setIsGuest(false);
+          setTimeout(() => {
+            if (checkIfNeedsPassword(session.user)) {
+              navigate("/set-password");
+              return;
             }
-          });
-        }, 0);
-      } else if (event === "SIGNED_OUT") {
-        // Stay on auth page
+
+            checkUserOnboardingStatus(session.user.id).then((hasCompletedOnboardingInDB) => {
+              if (hasCompletedOnboardingInDB) {
+                navigate("/home");
+              } else {
+                navigate("/onboarding");
+              }
+            });
+          }, 0);
+        }
       }
     });
 
+    // Check for existing session on mount (for page refresh cases)
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setIsGuest(false);
 
-        // Also handle OAuth users on initial session
         if (checkIfNeedsPassword(session.user)) {
           navigate("/set-password");
           return;
