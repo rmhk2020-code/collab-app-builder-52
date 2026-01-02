@@ -78,19 +78,31 @@ const Onboarding = () => {
     const updatedAnswers = { ...answers, [currentQuestion.id]: answer };
     setAnswers(updatedAnswers);
 
-    // Get the next question (could be a follow-up or next base question)
-    const nextQuestion = getNextQuestion(currentQuestion, answer, updatedAnswers, baseQuestionIndex);
+    // Check if the current answer triggers a follow-up
+    let nextQuestion: Question | null = null;
+    let isFollowUp = false;
+
+    if (currentQuestion.options) {
+      const selectedValues = Array.isArray(answer) ? answer : [answer];
+      for (const option of currentQuestion.options) {
+        if (selectedValues.includes(option.value) && option.followUp) {
+          nextQuestion = option.followUp;
+          isFollowUp = true;
+          break;
+        }
+      }
+    }
+
+    // If no follow-up, move to the next base question
+    if (!nextQuestion) {
+      const nextBaseIndex = baseQuestionIndex + 1;
+      if (nextBaseIndex < baseQuestions.length) {
+        nextQuestion = baseQuestions[nextBaseIndex];
+        setBaseQuestionIndex(nextBaseIndex);
+      }
+    }
 
     if (nextQuestion) {
-      // Check if it's a follow-up (same base index) or a new base question
-      const isFollowUp = currentQuestion.options?.some(opt => 
-        opt.followUp?.id === nextQuestion.id
-      );
-
-      if (!isFollowUp) {
-        setBaseQuestionIndex(baseQuestionIndex + 1);
-      }
-
       setQuestionHistory([...questionHistory.slice(0, currentQuestionIndex + 1), nextQuestion]);
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
