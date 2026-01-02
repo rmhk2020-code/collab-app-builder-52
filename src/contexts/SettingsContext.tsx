@@ -206,16 +206,29 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     return { ...defaultAppPreferences, theme: getInitialTheme() };
   };
 
-  const [userProfile, setUserProfile] = useState<UserProfile>(defaultUserProfile);
-  const [fitnessPlanSettings, setFitnessPlanSettings] = useState<FitnessPlanSettings>(defaultFitnessPlanSettings);
-  const [exerciseSettings, setExerciseSettings] = useState<ExerciseSettings>(defaultExerciseSettings);
-  const [dietSettings, setDietSettings] = useState<DietSettings>(defaultDietSettings);
-  const [trackingSettings, setTrackingSettings] = useState<TrackingSettings>(defaultTrackingSettings);
-  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(defaultNotificationSettings);
-  const [appPreferences, setAppPreferencesState] = useState<AppPreferences>(getInitialAppPreferences);
-  const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(defaultPrivacySettings);
+  // Helper to load from localStorage with fallback
+  const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      try {
+        return { ...defaultValue, ...JSON.parse(saved) };
+      } catch {
+        return defaultValue;
+      }
+    }
+    return defaultValue;
+  };
 
-  // Apply theme to document and persist
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => loadFromStorage("userProfile", defaultUserProfile));
+  const [fitnessPlanSettings, setFitnessPlanSettings] = useState<FitnessPlanSettings>(() => loadFromStorage("fitnessPlanSettings", defaultFitnessPlanSettings));
+  const [exerciseSettings, setExerciseSettings] = useState<ExerciseSettings>(() => loadFromStorage("exerciseSettings", defaultExerciseSettings));
+  const [dietSettings, setDietSettings] = useState<DietSettings>(() => loadFromStorage("dietSettings", defaultDietSettings));
+  const [trackingSettings, setTrackingSettings] = useState<TrackingSettings>(() => loadFromStorage("trackingSettings", defaultTrackingSettings));
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(() => loadFromStorage("notificationSettings", defaultNotificationSettings));
+  const [appPreferences, setAppPreferencesState] = useState<AppPreferences>(getInitialAppPreferences);
+  const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(() => loadFromStorage("privacySettings", defaultPrivacySettings));
+
+  // Apply theme to document, persist, and save all settings to localStorage
   const setAppPreferences = (prefs: AppPreferences) => {
     setAppPreferencesState(prefs);
     localStorage.setItem("appPreferences", JSON.stringify(prefs));
@@ -228,6 +241,22 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       document.documentElement.classList.remove("dark");
     }
   };
+
+  // Helper to persist all settings to localStorage for faster restore
+  const persistAllSettings = () => {
+    localStorage.setItem("userProfile", JSON.stringify(userProfile));
+    localStorage.setItem("fitnessPlanSettings", JSON.stringify(fitnessPlanSettings));
+    localStorage.setItem("exerciseSettings", JSON.stringify(exerciseSettings));
+    localStorage.setItem("dietSettings", JSON.stringify(dietSettings));
+    localStorage.setItem("trackingSettings", JSON.stringify(trackingSettings));
+    localStorage.setItem("notificationSettings", JSON.stringify(notificationSettings));
+    localStorage.setItem("privacySettings", JSON.stringify(privacySettings));
+  };
+
+  // Auto-persist when any setting changes
+  useEffect(() => {
+    persistAllSettings();
+  }, [userProfile, fitnessPlanSettings, exerciseSettings, dietSettings, trackingSettings, notificationSettings, privacySettings]);
 
   // Apply theme on mount
   useEffect(() => {
