@@ -222,6 +222,12 @@ export const FoodScanner = () => {
     setAnalysis(null);
   };
 
+  const scanAnother = () => {
+    setCapturedImage(null);
+    setAnalysis(null);
+    startCamera();
+  };
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50">
       {/* Camera Overlay */}
@@ -396,7 +402,7 @@ export const FoodScanner = () => {
                 </Card>
 
                 <div className="flex gap-3">
-                  <Button className="flex-1" variant="outline" onClick={reset}>
+                  <Button className="flex-1" variant="outline" onClick={scanAnother}>
                     <Camera className="h-4 w-4 mr-2" />
                     {t("scanAnother")}
                   </Button>
