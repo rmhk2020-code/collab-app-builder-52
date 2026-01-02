@@ -17,6 +17,8 @@ import Nutrition from "./pages/Nutrition";
 import Settings from "./pages/Settings";
 import Health from "./pages/Health";
 import NotFound from "./pages/NotFound";
+import { SettingsApplier } from "@/components/SettingsApplier";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -25,6 +27,7 @@ const App = () => (
       <HealthVitalsProvider>
         <FitnessPlanProvider>
           <TooltipProvider>
+            <SettingsApplier />
             <Toaster />
             <Sonner />
             <BrowserRouter>

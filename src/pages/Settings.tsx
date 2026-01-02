@@ -1228,8 +1228,9 @@ const Settings = () => {
                 <CardTitle className="flex items-center gap-2">
                   <Bell className="h-5 w-5 text-primary" />
                   Notification Preferences
+                  <Badge variant="outline" className="ml-2 text-xs">Preferences Saved</Badge>
                 </CardTitle>
-                <CardDescription>Control when and how you receive reminders</CardDescription>
+                <CardDescription>Control when and how you receive reminders. Push notifications require browser permission.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {[
@@ -1305,10 +1306,11 @@ const Settings = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Language</Label>
+                  <Label>Language <Badge variant="outline" className="ml-2 text-xs">Coming Soon</Badge></Label>
                   <Select
                     value={appPreferences.language}
                     onValueChange={(value) => setAppPreferences({ ...appPreferences, language: value })}
+                    disabled
                   >
                     <SelectTrigger className="min-h-[44px]">
                       <SelectValue />
@@ -1320,6 +1322,7 @@ const Settings = () => {
                       <SelectItem value="de">Deutsch</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">Full translation support coming in a future update</p>
                 </div>
 
                 <Separator />
@@ -1361,10 +1364,11 @@ const Settings = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Data Visibility</Label>
+                  <Label>Data Visibility <Badge variant="outline" className="ml-2 text-xs">Coming Soon</Badge></Label>
                   <Select
                     value={privacySettings.dataVisibility}
                     onValueChange={(value: any) => setPrivacySettings({ ...privacySettings, dataVisibility: value })}
+                    disabled
                   >
                     <SelectTrigger className="min-h-[44px]">
                       <SelectValue />
@@ -1374,19 +1378,21 @@ const Settings = () => {
                       <SelectItem value="public">Public</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">Social features coming in a future update</p>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Lock className="h-4 w-4" />
                     <div className="space-y-0.5">
-                      <Label>App Lock</Label>
+                      <Label>App Lock <Badge variant="outline" className="ml-2 text-xs">Coming Soon</Badge></Label>
                       <p className="text-sm text-muted-foreground">Require PIN/biometric to open</p>
                     </div>
                   </div>
                   <Switch
                     checked={privacySettings.appLock}
                     onCheckedChange={(checked) => setPrivacySettings({ ...privacySettings, appLock: checked })}
+                    disabled
                   />
                 </div>
 
@@ -1395,7 +1401,7 @@ const Settings = () => {
                     <Cloud className="h-4 w-4" />
                     <div className="space-y-0.5">
                       <Label>Cloud Backup</Label>
-                      <p className="text-sm text-muted-foreground">Automatically backup your data</p>
+                      <p className="text-sm text-muted-foreground">Your data syncs to the cloud automatically when signed in</p>
                     </div>
                   </div>
                   <Switch

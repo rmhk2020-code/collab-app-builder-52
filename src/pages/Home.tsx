@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Target, Zap, TrendingUp, Calendar, Clock, Dumbbell, CheckCircle, Flame, Apple, Smile, Frown, Meh, Heart, Sparkles, RefreshCw, Info } from "lucide-react";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { useUserData } from "@/hooks/useUserData";
 import { supabase } from "@/integrations/supabase/client";
 import AppHeader from "@/components/layout/AppHeader";
@@ -63,6 +64,8 @@ const Home = () => {
     dailyCalorieGoal,
     isGuest
   } = useFitnessPlan();
+  
+  const { trackingSettings } = useSettings();
   
   // Initialize user data sync
   useUserData();
@@ -220,8 +223,8 @@ const Home = () => {
               </Card>
             )}
 
-            {/* Progress Tracking Section */}
-            {!isGuest && (
+            {/* Progress Tracking Section - respects trackingSettings.enableProgressBars */}
+            {!isGuest && trackingSettings.enableProgressBars && (
               <div className="mb-8 space-y-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
                 <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-primary animate-bounce" style={{ animationDuration: '2s' }} />

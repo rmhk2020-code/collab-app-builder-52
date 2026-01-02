@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useExercises } from '@/hooks/useExercises';
+import { useSettings } from '@/contexts/SettingsContext';
 import { ExerciseCard } from './ExerciseCard';
 import { ExerciseFilters } from './ExerciseFilters';
 import { FittFilter } from '@/types/exercise';
-import { Loader2, Dumbbell, Target, Zap, Clock, Calendar, Search, X } from 'lucide-react';
+import { Loader2, Dumbbell, Target, Zap, Clock, Calendar, Search, X, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -17,21 +18,44 @@ export const ExerciseLibrary = ({ isGuest = false }: ExerciseLibraryProps) => {
   const [filters, setFilters] = useState<FittFilter>({});
   const [searchQuery, setSearchQuery] = useState('');
   const { exercises, loading, error } = useExercises(filters);
+  const { exerciseSettings } = useSettings();
 
-  // Filter exercises by search query
+  // Filter exercises by search query AND exercise settings
   const filteredExercises = useMemo(() => {
-    if (!searchQuery.trim()) return exercises;
-    
-    const query = searchQuery.toLowerCase().trim();
-    return exercises.filter(exercise => 
-      exercise.name.toLowerCase().includes(query) ||
-      exercise.description?.toLowerCase().includes(query) ||
-      exercise.category.toLowerCase().includes(query) ||
-      exercise.type.toLowerCase().includes(query) ||
-      exercise.muscle_groups.some(mg => mg.toLowerCase().includes(query)) ||
-      exercise.equipment.some(eq => eq.toLowerCase().includes(query))
-    );
-  }, [exercises, searchQuery]);
+    let result = exercises;
+
+    // Apply difficulty filter from settings
+    if (exerciseSettings.difficultyFilter.length > 0 && exerciseSettings.difficultyFilter.length < 3) {
+      result = result.filter(exercise => 
+        exerciseSettings.difficultyFilter.includes(exercise.difficulty_level)
+      );
+    }
+
+    // Apply search query filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(exercise => 
+        exercise.name.toLowerCase().includes(query) ||
+        exercise.description?.toLowerCase().includes(query) ||
+        exercise.category.toLowerCase().includes(query) ||
+        exercise.type.toLowerCase().includes(query) ||
+        exercise.muscle_groups.some(mg => mg.toLowerCase().includes(query)) ||
+        exercise.equipment.some(eq => eq.toLowerCase().includes(query))
+      );
+    }
+
+    // Sort recommended exercises first if setting is enabled
+    if (exerciseSettings.showRecommended) {
+      // For now, mark beginner exercises as "recommended" for beginners
+      result = [...result].sort((a, b) => {
+        if (a.difficulty_level === 'beginner' && b.difficulty_level !== 'beginner') return -1;
+        if (b.difficulty_level === 'beginner' && a.difficulty_level !== 'beginner') return 1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [exercises, searchQuery, exerciseSettings.difficultyFilter, exerciseSettings.showRecommended]);
 
   if (loading) {
     return (
