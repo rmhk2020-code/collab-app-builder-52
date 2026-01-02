@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,26 +9,31 @@ import FitnessPlanScreen from "@/components/onboarding/FitnessPlanScreen";
 import FeedbackScreen from "@/components/onboarding/FeedbackScreen";
 import { supabase } from "@/integrations/supabase/client";
 import { useFitnessPlan, type FitnessPlan, type OnboardingAnswers } from "@/contexts/FitnessPlanContext";
-import { baseQuestions, getNextQuestion, buildQuestionSummary, Question } from "@/data/onboardingQuestions";
+import { baseQuestions, buildQuestionSummary, Question } from "@/data/onboardingQuestions";
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const { setFitnessPlan: setGlobalPlan, setAnswers: setGlobalAnswers, setHasCompletedOnboarding } = useFitnessPlan();
   const [currentStep, setCurrentStep] = useState<"loading" | "welcome" | "explanation" | "questions" | "generating" | "plan" | "feedback">("loading");
   const [questionHistory, setQuestionHistory] = useState<Question[]>([baseQuestions[0]]);
-  const [baseQuestionIndex, setBaseQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [fitnessPlan, setFitnessPlan] = useState<FitnessPlan | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const hasCheckedUserStatus = useRef(false);
 
   const currentQuestionIndex = questionHistory.length - 1;
   const currentQuestion = questionHistory[currentQuestionIndex];
 
   useEffect(() => {
+    if (hasCheckedUserStatus.current) return;
+    hasCheckedUserStatus.current = true;
+
     const checkUserStatus = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
-      
+
+      // Guest flow: do NOT keep re-checking and resetting steps.
       if (!user) {
         setCurrentStep("welcome");
         return;
@@ -64,7 +69,7 @@ const Onboarding = () => {
     };
 
     checkUserStatus();
-  }, [navigate, setGlobalPlan, setGlobalAnswers, setHasCompletedOnboarding]);
+  }, []);
 
   const handleWelcomeContinue = () => {
     setCurrentStep("explanation");
@@ -72,6 +77,14 @@ const Onboarding = () => {
 
   const handleStart = () => {
     setCurrentStep("questions");
+  };
+
+  const getLastBaseQuestionIndex = (history: Question[]) => {
+    for (let i = history.length - 1; i >= 0; i--) {
+      const idx = baseQuestions.findIndex((q) => q.id === history[i].id);
+      if (idx >= 0) return idx;
+    }
+    return 0;
   };
 
   const handleAnswer = (answer: string | string[]) => {
@@ -90,12 +103,12 @@ const Onboarding = () => {
       }
     }
 
-    // 2) Otherwise next base question
+    // 2) Otherwise next base question (based on the last base question in history)
     if (!nextQuestion) {
-      const nextBaseIndex = baseQuestionIndex + 1;
+      const lastBaseIdx = getLastBaseQuestionIndex(questionHistory);
+      const nextBaseIndex = lastBaseIdx + 1;
       if (nextBaseIndex < baseQuestions.length) {
         nextQuestion = baseQuestions[nextBaseIndex];
-        setBaseQuestionIndex(nextBaseIndex);
       }
     }
 
@@ -108,9 +121,10 @@ const Onboarding = () => {
 
   const handleSkip = () => {
     // Always skip to next base question
-    const nextBaseIndex = baseQuestionIndex + 1;
+    const lastBaseIdx = getLastBaseQuestionIndex(questionHistory);
+    const nextBaseIndex = lastBaseIdx + 1;
+
     if (nextBaseIndex < baseQuestions.length) {
-      setBaseQuestionIndex(nextBaseIndex);
       setQuestionHistory((prev) => [...prev, baseQuestions[nextBaseIndex]]);
     } else {
       generateFitnessPlan(answers);
@@ -129,16 +143,6 @@ const Onboarding = () => {
         delete next[leavingQuestion.id];
         return next;
       });
-
-      // Update baseQuestionIndex to the last base question in history
-      const nextHistory = questionHistory.slice(0, -1);
-      for (let i = nextHistory.length - 1; i >= 0; i--) {
-        const idx = baseQuestions.findIndex((q) => q.id === nextHistory[i].id);
-        if (idx >= 0) {
-          setBaseQuestionIndex(idx);
-          break;
-        }
-      }
     } else {
       setCurrentStep("explanation");
     }
@@ -232,18 +236,16 @@ const Onboarding = () => {
     <div className="min-h-screen bg-background relative">
       <header className="absolute top-0 left-0 right-0 z-10 p-4">
         <div className="container mx-auto max-w-6xl">
-          {currentStep !== "welcome" && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleBackToSignIn}
-              className="gap-2 min-h-[44px]"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Sign In
-            </Button>
-          )}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleBackToSignIn}
+            className="gap-2 min-h-[44px]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Sign In
+          </Button>
         </div>
       </header>
 
