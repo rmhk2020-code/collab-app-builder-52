@@ -6,7 +6,6 @@ import { Progress } from "@/components/ui/progress";
 import { Target, Zap, TrendingUp, Calendar, Clock, Dumbbell, CheckCircle, Flame, Apple, Smile, Frown, Meh, Heart, Sparkles, RefreshCw, Info } from "lucide-react";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import { useSettings } from "@/contexts/SettingsContext";
-import { useUserData } from "@/hooks/useUserData";
 import { supabase } from "@/integrations/supabase/client";
 import AppHeader from "@/components/layout/AppHeader";
 
@@ -66,9 +65,6 @@ const Home = () => {
   } = useFitnessPlan();
   
   const { trackingSettings } = useSettings();
-  
-  // Initialize user data sync
-  useUserData();
 
   // Auth check - redirect to login if not authenticated and not a guest
   useEffect(() => {

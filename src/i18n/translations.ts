@@ -154,7 +154,13 @@ export const translations = {
     privacy: "Privacy",
     smart: "Smart",
     system: "System",
-    
+
+    // Cloud sync tester
+    cloudSyncTitle: "Cloud Sync Test",
+    cloudSyncHelp: "Checks that your exercise + nutrition totals are saved to the cloud.",
+    cloudSyncCheck: "Check cloud sync",
+    cloudSyncUpToDate: "Cloud data matches this device ✅",
+    cloudSyncMismatch: "Cloud data does not match yet (wait 2s and try again).",
     // Account Settings
     signedInAs: "Signed In As",
     changePassword: "Change Password",

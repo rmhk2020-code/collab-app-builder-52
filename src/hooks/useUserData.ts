@@ -315,5 +315,27 @@ export const useUserData = () => {
     saveUserData,
   ]);
 
+  // Best-effort flush when the user leaves / backgrounds the app
+  useEffect(() => {
+    if (isGuest) return;
+
+    const flush = () => {
+      // Don't await here (events like pagehide can't block anyway)
+      void saveUserData();
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [isGuest, saveUserData]);
+
   return { loadUserData, saveUserData };
 };
