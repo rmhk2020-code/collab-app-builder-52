@@ -25,10 +25,10 @@ const handler = async (req: Request): Promise<Response> => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Get all users with their profiles
+    // Get all users with their profiles including nutrition data
     const { data: profiles, error: profilesError } = await supabaseAdmin
       .from("user_profiles")
-      .select("user_id, weekly_exercise_goal, monthly_exercise_goal, exercises_completed_this_week, exercises_completed_this_month, fitness_plan");
+      .select("user_id, weekly_exercise_goal, monthly_exercise_goal, exercises_completed_this_week, exercises_completed_this_month, exercises_completed_today, calories_eaten, daily_calorie_goal, fitness_plan");
 
     if (profilesError) {
       console.error("Error fetching profiles:", profilesError);
@@ -59,14 +59,23 @@ const handler = async (req: Request): Promise<Response> => {
         }
 
         const email = userData.user.email;
+        
+        // Exercise data
         const weeklyGoal = profile.weekly_exercise_goal || 5;
         const monthlyGoal = profile.monthly_exercise_goal || 20;
         const weeklyCompleted = profile.exercises_completed_this_week || 0;
         const monthlyCompleted = profile.exercises_completed_this_month || 0;
+        const todayCompleted = profile.exercises_completed_today || 0;
         const weeklyRemaining = Math.max(0, weeklyGoal - weeklyCompleted);
         const monthlyRemaining = Math.max(0, monthlyGoal - monthlyCompleted);
         const weeklyProgress = Math.min(100, Math.round((weeklyCompleted / weeklyGoal) * 100));
         const monthlyProgress = Math.min(100, Math.round((monthlyCompleted / monthlyGoal) * 100));
+
+        // Nutrition data
+        const caloriesEaten = profile.calories_eaten || 0;
+        const dailyCalorieGoal = profile.daily_calorie_goal || 2000;
+        const caloriesRemaining = Math.max(0, dailyCalorieGoal - caloriesEaten);
+        const calorieProgress = Math.min(100, Math.round((caloriesEaten / dailyCalorieGoal) * 100));
 
         // Get fitness goal from plan
         const fitnessGoal = profile.fitness_plan?.goal || "staying fit and healthy";
@@ -122,6 +131,18 @@ const handler = async (req: Request): Promise<Response> => {
                     <span>${monthlyCompleted} of ${monthlyGoal} exercises done</span>
                     <span>${monthlyRemaining} to go!</span>
                   </div>
+                </div>
+
+                <div class="goal-card" style="border-left-color: #F59E0B;">
+                  <h3>🍎 Today's Nutrition</h3>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${calorieProgress}%; background: linear-gradient(90deg, #F59E0B, #fbbf24);"></div>
+                  </div>
+                  <div class="stats">
+                    <span>${caloriesEaten} of ${dailyCalorieGoal} calories</span>
+                    <span>${caloriesRemaining} remaining</span>
+                  </div>
+                  <p style="margin-top: 10px; font-size: 12px; color: #64748b;">Today's exercises: ${todayCompleted}</p>
                 </div>
 
                 <div class="motivation">
