@@ -8,6 +8,7 @@ import { FitnessPlanProvider } from "@/contexts/FitnessPlanContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { HealthVitalsProvider } from "@/contexts/HealthVitalsContext";
 import { TranslationProvider } from "@/i18n/TranslationContext";
+import { UserDataSync } from "@/components/UserDataSync";
 import Onboarding from "./pages/Onboarding";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
@@ -29,6 +30,7 @@ const App = () => (
         <HealthVitalsProvider>
           <FitnessPlanProvider>
             <TooltipProvider>
+              <UserDataSync />
               <SettingsApplier />
               <Toaster />
               <Sonner />
