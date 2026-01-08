@@ -10,6 +10,7 @@ import { FoodScanner } from "@/components/nutrition/FoodScanner";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import AppHeader from "@/components/layout/AppHeader";
 import { useTranslation } from "@/i18n/TranslationContext";
+import { LogHistoryModal } from "@/components/LogHistoryModal";
 
 const Nutrition = () => {
   const { t } = useTranslation();
@@ -58,7 +59,7 @@ const Nutrition = () => {
         <div className="sticky top-[61px] z-10 bg-card border-b border-border py-4 px-4 shadow-sm">
           <div className="container mx-auto max-w-6xl">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-primary" />
                   <span className="text-sm font-medium text-foreground">{currentTime}</span>
@@ -69,6 +70,7 @@ const Nutrition = () => {
                     <span className="text-sm text-muted-foreground hidden sm:inline">{t("fitnessGoal")}: {fitnessPlan.goal}</span>
                   </div>
                 )}
+                <LogHistoryModal />
               </div>
               
               <Card className="flex-1 max-w-lg bg-muted/30">

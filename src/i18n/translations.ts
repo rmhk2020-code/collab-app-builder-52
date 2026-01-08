@@ -261,6 +261,12 @@ export const translations = {
     sleepHours: "Sleep Hours",
     stepsToday: "Steps Today",
     waterIntake: "Water Intake",
+
+    // Log History
+    logHistory: "View History",
+    activityHistory: "Activity History",
+    noFoodLogs: "No food logs yet. Start tracking your meals!",
+    noExerciseLogs: "No exercise logs yet. Start working out!",
   },
 
   es: {
@@ -519,6 +525,12 @@ export const translations = {
     sleepHours: "Horas de Sueño",
     stepsToday: "Pasos Hoy",
     waterIntake: "Consumo de Agua",
+
+    // Log History
+    logHistory: "Ver Historial",
+    activityHistory: "Historial de Actividades",
+    noFoodLogs: "Aún no hay registros de comida. ¡Comienza a registrar tus comidas!",
+    noExerciseLogs: "Aún no hay registros de ejercicio. ¡Comienza a entrenar!",
   },
 
   fr: {
@@ -777,6 +789,12 @@ export const translations = {
     sleepHours: "Heures de Sommeil",
     stepsToday: "Pas Aujourd'hui",
     waterIntake: "Consommation d'Eau",
+
+    // Log History
+    logHistory: "Voir l'Historique",
+    activityHistory: "Historique d'Activités",
+    noFoodLogs: "Pas encore de repas enregistrés. Commencez à suivre vos repas!",
+    noExerciseLogs: "Pas encore d'exercices enregistrés. Commencez à vous entraîner!",
   },
 
   de: {
@@ -1035,6 +1053,12 @@ export const translations = {
     sleepHours: "Schlafstunden",
     stepsToday: "Schritte Heute",
     waterIntake: "Wasseraufnahme",
+
+    // Log History
+    logHistory: "Verlauf anzeigen",
+    activityHistory: "Aktivitätsverlauf",
+    noFoodLogs: "Noch keine Mahlzeiten erfasst. Beginnen Sie mit der Erfassung!",
+    noExerciseLogs: "Noch keine Übungen erfasst. Beginnen Sie zu trainieren!",
   },
 } as const;
 

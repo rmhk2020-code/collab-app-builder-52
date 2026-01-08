@@ -9,6 +9,7 @@ import { ExerciseLibrary } from "@/components/exercises/ExerciseLibrary";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import AppHeader from "@/components/layout/AppHeader";
 import { useTranslation } from "@/i18n/TranslationContext";
+import { LogHistoryModal } from "@/components/LogHistoryModal";
 
 const Exercises = () => {
   const { t } = useTranslation();
@@ -75,6 +76,7 @@ const Exercises = () => {
                 {fitnessPlan && (
                   <span className="text-sm text-muted-foreground hidden md:inline">{t("fitnessGoal")}: {fitnessPlan.goal}</span>
                 )}
+                <LogHistoryModal />
                 <Button 
                   onClick={handleQuickAdd}
                   size="sm"
