@@ -4,6 +4,7 @@ import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 
 const LAST_DAILY_RESET_KEY = "lastDailyReset";
 const LAST_WEEKLY_RESET_KEY = "lastWeeklyReset";
+const LAST_MONTHLY_RESET_KEY = "lastMonthlyReset";
 
 /**
  * Get the current date string in user's local timezone (YYYY-MM-DD)
@@ -35,8 +36,18 @@ const getLocalWeekString = () => {
 };
 
 /**
+ * Get the current month identifier (YYYY-MM)
+ */
+const getLocalMonthString = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  return `${year}-${month.toString().padStart(2, "0")}`;
+};
+
+/**
  * Component that handles syncing user data with Supabase.
- * Also handles automatic daily/weekly resets at midnight in user's timezone.
+ * Also handles automatic daily/weekly/monthly resets at midnight in user's timezone.
  * This must be rendered within all context providers to work correctly.
  */
 export const UserDataSync = () => {
@@ -47,6 +58,7 @@ export const UserDataSync = () => {
     setCaloriesEaten,
     setExercisesCompletedToday,
     setExercisesCompletedThisWeek,
+    setExercisesCompletedThisMonth,
     setFoodLogs,
     foodLogs,
   } = useFitnessPlan();
@@ -54,9 +66,11 @@ export const UserDataSync = () => {
   const checkAndPerformResets = useCallback(() => {
     const currentDate = getLocalDateString();
     const currentWeek = getLocalWeekString();
+    const currentMonth = getLocalMonthString();
     
     const lastDailyReset = localStorage.getItem(LAST_DAILY_RESET_KEY);
     const lastWeeklyReset = localStorage.getItem(LAST_WEEKLY_RESET_KEY);
+    const lastMonthlyReset = localStorage.getItem(LAST_MONTHLY_RESET_KEY);
 
     // Daily reset: calories and today's exercises
     if (lastDailyReset !== currentDate) {
@@ -79,7 +93,14 @@ export const UserDataSync = () => {
       setExercisesCompletedThisWeek(0);
       localStorage.setItem(LAST_WEEKLY_RESET_KEY, currentWeek);
     }
-  }, [setCaloriesEaten, setExercisesCompletedToday, setExercisesCompletedThisWeek, setFoodLogs, foodLogs]);
+
+    // Monthly reset: this month's exercises
+    if (lastMonthlyReset !== currentMonth) {
+      console.log("[UserDataSync] Performing monthly reset for", currentMonth);
+      setExercisesCompletedThisMonth(0);
+      localStorage.setItem(LAST_MONTHLY_RESET_KEY, currentMonth);
+    }
+  }, [setCaloriesEaten, setExercisesCompletedToday, setExercisesCompletedThisWeek, setExercisesCompletedThisMonth, setFoodLogs, foodLogs]);
 
   // Check for resets on mount and when app regains focus
   useEffect(() => {
