@@ -40,6 +40,45 @@ const Auth = () => {
     return provider !== "email" && !providers.includes("email") && !hasPassword;
   };
 
+  // Surface OAuth callback errors (these are often returned as URL params, not JS exceptions)
+  useEffect(() => {
+    const parseParams = (raw: string) => {
+      const s = raw?.trim();
+      if (!s) return new URLSearchParams();
+      const cleaned = s.startsWith("#") || s.startsWith("?") ? s.slice(1) : s;
+      return new URLSearchParams(cleaned);
+    };
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashParams = parseParams(window.location.hash);
+
+    const error = searchParams.get("error") || hashParams.get("error");
+    const errorDescription =
+      searchParams.get("error_description") || hashParams.get("error_description") || "";
+
+    const rawMessage =
+      errorDescription ||
+      error ||
+      "OAuth login failed. This is usually caused by missing Redirect URL / Site URL settings in Supabase or Google Console.";
+
+    const message = rawMessage.includes("requested path is invalid")
+      ? "Supabase rejected the redirect URL. Add this site URL to Supabase: Authentication → URL Configuration → Additional Redirect URLs."
+      : rawMessage;
+
+    if (error || errorDescription) {
+      setIsLoading(false);
+      toast({
+        title: "Sign-in failed",
+        description: message,
+        variant: "destructive",
+      });
+
+      // Avoid repeated toasts on refresh
+      const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }, []);
+
   useEffect(() => {
     // Track if we're currently handling a signup to prevent double navigation
     let isHandlingSignup = false;
@@ -236,6 +275,16 @@ const Auth = () => {
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
+    const fallback = window.setTimeout(() => {
+      setIsLoading(false);
+      toast({
+        title: "Google sign-in didn’t start",
+        description:
+          "If nothing opened, your browser may be blocking pop-ups/redirects, or this site's URL isn't allowed in Supabase Auth URL Configuration.",
+        variant: "destructive",
+      });
+    }, 8000);
+
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -246,6 +295,7 @@ const Auth = () => {
 
       if (error) throw error;
     } catch (error: any) {
+      window.clearTimeout(fallback);
       toast({
         title: "Google sign-in failed",
         description: error.message || "Could not sign in with Google. Please try again.",
@@ -257,6 +307,16 @@ const Auth = () => {
 
   const handleAppleLogin = async () => {
     setIsLoading(true);
+    const fallback = window.setTimeout(() => {
+      setIsLoading(false);
+      toast({
+        title: "Apple sign-in didn’t start",
+        description:
+          "If nothing opened, your browser may be blocking pop-ups/redirects, or this site's URL isn't allowed in Supabase Auth URL Configuration.",
+        variant: "destructive",
+      });
+    }, 8000);
+
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "apple",
@@ -267,6 +327,7 @@ const Auth = () => {
 
       if (error) throw error;
     } catch (error: any) {
+      window.clearTimeout(fallback);
       toast({
         title: "Apple sign-in failed",
         description: error.message || "Could not sign in with Apple. Please try again.",
