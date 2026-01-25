@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Lock, User, Loader2, ArrowRight, Dumbbell, Apple, Smartphone, Watch } from "lucide-react";
+import { Mail, Lock, User, Loader2, ArrowRight, Dumbbell, Apple, Smartphone, Watch, RefreshCw } from "lucide-react";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -17,6 +17,9 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showResendButton, setShowResendButton] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [lastSignedUpEmail, setLastSignedUpEmail] = useState("");
 
   const checkUserOnboardingStatus = async (userId: string) => {
     const { data: profile } = await supabase
@@ -163,6 +166,8 @@ const Auth = () => {
             setIsSignUp(false);
           } else if (!signUpData.session) {
             // New signup but email confirmation required
+            setLastSignedUpEmail(email);
+            setShowResendButton(true);
             toast({
               title: "Check your email",
               description: "We've sent you a confirmation link. Please check your email to verify your account.",
@@ -198,9 +203,11 @@ const Auth = () => {
               variant: "destructive",
             });
           } else if (error.message.includes("Email not confirmed")) {
+            setLastSignedUpEmail(email);
+            setShowResendButton(true);
             toast({
               title: "Email not confirmed",
-              description: "Please check your email and click the confirmation link before signing in.",
+              description: "Please check your email and click the confirmation link, or resend it below.",
               variant: "destructive",
             });
           } else {
@@ -272,6 +279,45 @@ const Auth = () => {
   const handleGuestContinue = () => {
     setIsGuest(true);
     navigate("/onboarding");
+  };
+
+  const handleResendConfirmation = async () => {
+    const emailToResend = lastSignedUpEmail || email;
+    
+    if (!emailToResend) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsResending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: emailToResend,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth`,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Confirmation email sent!",
+        description: "Please check your inbox and spam folder.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to resend",
+        description: error.message || "Could not resend confirmation email. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return (
@@ -497,11 +543,42 @@ const Auth = () => {
             </Button>
           </form>
 
+          {/* Resend Confirmation Email Button */}
+          {showResendButton && (
+            <div className="text-center p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+              <p className="text-sm text-zinc-400 mb-3">
+                Didn't receive the confirmation email?
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleResendConfirmation}
+                disabled={isResending}
+                className="w-full bg-white/5 border-white/10 hover:bg-white/10 text-white"
+              >
+                {isResending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Resend Confirmation Email
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+
           <div className="text-center">
             <Button
               variant="link"
               className="text-zinc-400 hover:text-white"
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setShowResendButton(false);
+              }}
               disabled={isLoading}
             >
               {isSignUp 
