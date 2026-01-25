@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,12 +28,26 @@ const isPasswordValid = (password: string) => {
 
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const debug = new URLSearchParams(window.location.search).get("debug") === "1";
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [debugLastError, setDebugLastError] = useState<string | null>(null);
+  const [debugLastResult, setDebugLastResult] = useState<any>(null);
+
+  useEffect(() => {
+    if (!debug) return;
+    supabase.auth.getSession().then(({ data }) => {
+      setDebugLastResult((prev: any) => ({
+        ...(prev || {}),
+        sessionUserId: data.session?.user?.id ?? null,
+        origin: window.location.origin,
+      }));
+    });
+  }, [debug]);
 
   const withTimeout = async <T,>(promise: Promise<T>, ms: number) => {
     let timeoutId: number | undefined;
@@ -50,6 +64,7 @@ const ResetPassword = () => {
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
+    setDebugLastError(null);
 
     if (!email) {
       toast({
@@ -73,6 +88,10 @@ const ResetPassword = () => {
 
       if (error) throw error;
 
+      if (debug) {
+        setDebugLastResult({ ok: true, data });
+      }
+
       // Always proceed to code step - the server returns same message for security
       setStep("code");
       toast({
@@ -80,6 +99,15 @@ const ResetPassword = () => {
         description: "If an account exists with this email, a reset code has been sent.",
       });
     } catch (error: any) {
+      if (debug) {
+        setDebugLastError(error?.message || String(error));
+        setDebugLastResult({ ok: false, error: error?.message || String(error) });
+        toast({
+          title: "Reset code debug error",
+          description: error?.message || String(error),
+          variant: "destructive",
+        });
+      }
       toast({
         title: "Request sent",
         description: "If an account exists with this email, a reset code has been sent.",
@@ -108,6 +136,7 @@ const ResetPassword = () => {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    setDebugLastError(null);
 
     if (!newPassword || !confirmPassword) {
       toast({
@@ -149,6 +178,10 @@ const ResetPassword = () => {
 
       if (error) throw error;
 
+      if (debug) {
+        setDebugLastResult({ ok: true, data });
+      }
+
       if (data?.error) {
         toast({
           title: "Error",
@@ -164,6 +197,10 @@ const ResetPassword = () => {
         description: "You can now sign in with your new password.",
       });
     } catch (error: any) {
+      if (debug) {
+        setDebugLastError(error?.message || String(error));
+        setDebugLastResult({ ok: false, error: error?.message || String(error) });
+      }
       toast({
         title: "Failed to reset password",
         description: error.message || "Something went wrong. Please try again.",
@@ -373,6 +410,22 @@ const ResetPassword = () => {
           <CardDescription>{getDescription()}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {debug && (
+            <div className="rounded-lg border border-border bg-muted/30 p-3 text-left">
+              <div className="text-xs font-semibold mb-1">Reset Debug (debug=1)</div>
+              <div className="text-xs text-muted-foreground">
+                <div><span className="font-medium">origin:</span> {window.location.origin}</div>
+                <div><span className="font-medium">step:</span> {step}</div>
+                {debugLastError && <div className="mt-1"><span className="font-medium">last error:</span> {debugLastError}</div>}
+              </div>
+              {debugLastResult && (
+                <pre className="mt-2 text-[11px] leading-snug whitespace-pre-wrap break-words max-h-40 overflow-auto">
+{JSON.stringify(debugLastResult, null, 2)}
+                </pre>
+              )}
+            </div>
+          )}
+
           {renderStep()}
 
           {step !== "success" && (
