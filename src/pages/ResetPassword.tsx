@@ -35,6 +35,19 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const withTimeout = async <T,>(promise: Promise<T>, ms: number) => {
+    let timeoutId: number | undefined;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = window.setTimeout(() => reject(new Error("Request timed out")), ms);
+    });
+
+    try {
+      return await Promise.race([promise, timeoutPromise]);
+    } finally {
+      if (timeoutId) window.clearTimeout(timeoutId);
+    }
+  };
+
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -51,9 +64,12 @@ const ResetPassword = () => {
 
     try {
       // Call edge function to send reset code
-      const { data, error } = await supabase.functions.invoke("send-password-reset", {
-        body: { email },
-      });
+      const { data, error } = await withTimeout(
+        supabase.functions.invoke("send-password-reset", {
+          body: { email },
+        }),
+        15000
+      );
 
       if (error) throw error;
 
@@ -124,9 +140,12 @@ const ResetPassword = () => {
 
     try {
       // Update password using Supabase edge function
-      const { data, error } = await supabase.functions.invoke("update-password", {
-        body: { email, newPassword, code },
-      });
+      const { data, error } = await withTimeout(
+        supabase.functions.invoke("update-password", {
+          body: { email, newPassword, code },
+        }),
+        15000
+      );
 
       if (error) throw error;
 
