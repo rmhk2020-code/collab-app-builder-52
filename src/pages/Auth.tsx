@@ -9,9 +9,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import healthKineticsLogo from "@/assets/health-kinetics-logo.png";
 
+type AuthDebugEvent = { at: string; event: string; hasSession: boolean; userId?: string };
+
+const isDebugEnabled = () => {
+  try {
+    return new URLSearchParams(window.location.search).get("debug") === "1";
+  } catch {
+    return false;
+  }
+};
+
 const Auth = () => {
   const navigate = useNavigate();
   const { setIsGuest } = useFitnessPlan();
+  const debug = isDebugEnabled();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,6 +31,9 @@ const Auth = () => {
   const [showResendButton, setShowResendButton] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [lastSignedUpEmail, setLastSignedUpEmail] = useState("");
+  const [debugSessionUserId, setDebugSessionUserId] = useState<string | null>(null);
+  const [debugEvents, setDebugEvents] = useState<AuthDebugEvent[]>([]);
+  const [debugErrorParams, setDebugErrorParams] = useState<Record<string, string>>({});
 
   const checkUserOnboardingStatus = async (userId: string) => {
     const { data: profile } = await supabase
@@ -52,6 +66,13 @@ const Auth = () => {
     const searchParams = new URLSearchParams(window.location.search);
     const hashParams = parseParams(window.location.hash);
 
+    if (debug) {
+      const combined: Record<string, string> = {};
+      for (const [k, v] of searchParams.entries()) combined[`search.${k}`] = v;
+      for (const [k, v] of hashParams.entries()) combined[`hash.${k}`] = v;
+      setDebugErrorParams(combined);
+    }
+
     const error = searchParams.get("error") || hashParams.get("error");
     const errorDescription =
       searchParams.get("error_description") || hashParams.get("error_description") || "";
@@ -74,10 +95,43 @@ const Auth = () => {
       });
 
       // Avoid repeated toasts on refresh
-      const cleanUrl = `${window.location.origin}${window.location.pathname}`;
-      window.history.replaceState({}, document.title, cleanUrl);
+      if (!debug) {
+        const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
     }
-  }, []);
+  }, [debug]);
+
+  // Debug: show session + auth events to understand why only custom domain fails
+  useEffect(() => {
+    if (!debug) return;
+
+    let unsub: (() => void) | undefined;
+
+    supabase.auth.getSession().then(({ data }) => {
+      setDebugSessionUserId(data.session?.user?.id ?? null);
+    });
+
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      setDebugEvents((prev) => [
+        {
+          at: new Date().toISOString(),
+          event,
+          hasSession: Boolean(session),
+          userId: session?.user?.id,
+        },
+        ...prev,
+      ].slice(0, 15));
+
+      // Keep session snapshot up-to-date
+      setDebugSessionUserId(session?.user?.id ?? null);
+    });
+    unsub = () => data.subscription.unsubscribe();
+
+    return () => {
+      unsub?.();
+    };
+  }, [debug]);
 
   useEffect(() => {
     // Track if we're currently handling a signup to prevent double navigation
@@ -176,7 +230,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth`,
+            emailRedirectTo: `${window.location.origin}/auth${debug ? "?debug=1" : ""}`,
             data: {
               name: name || undefined,
             },
@@ -289,7 +343,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth`,
+          redirectTo: `${window.location.origin}/auth${debug ? "?debug=1" : ""}`,
         },
       });
 
@@ -321,7 +375,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "apple",
         options: {
-          redirectTo: `${window.location.origin}/auth`,
+          redirectTo: `${window.location.origin}/auth${debug ? "?debug=1" : ""}`,
         },
       });
 
@@ -360,7 +414,7 @@ const Auth = () => {
         type: 'signup',
         email: emailToResend,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth`,
+          emailRedirectTo: `${window.location.origin}/auth${debug ? "?debug=1" : ""}`,
         },
       });
 
@@ -466,6 +520,36 @@ const Auth = () => {
       {/* Right Side - Auth Form */}
       <div className="w-full lg:w-1/2 xl:w-2/5 flex items-center justify-center px-6 py-12 bg-zinc-900/50 backdrop-blur-sm">
         <div className="w-full max-w-md space-y-8">
+          {debug && (
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-left">
+              <div className="text-xs font-semibold text-zinc-200 mb-2">Auth Debug (debug=1)</div>
+              <div className="text-xs text-zinc-400 space-y-1">
+                <div><span className="text-zinc-300">origin:</span> {window.location.origin}</div>
+                <div><span className="text-zinc-300">path:</span> {window.location.pathname}{window.location.search}</div>
+                <div className="break-all"><span className="text-zinc-300">hash:</span> {window.location.hash || "(none)"}</div>
+                <div><span className="text-zinc-300">session user:</span> {debugSessionUserId ?? "(none)"}</div>
+              </div>
+
+              {Object.keys(debugErrorParams).length > 0 && (
+                <div className="mt-3">
+                  <div className="text-xs font-semibold text-zinc-200 mb-1">callback params</div>
+                  <pre className="text-[11px] leading-snug text-zinc-300 whitespace-pre-wrap break-words max-h-40 overflow-auto">
+{JSON.stringify(debugErrorParams, null, 2)}
+                  </pre>
+                </div>
+              )}
+
+              {debugEvents.length > 0 && (
+                <div className="mt-3">
+                  <div className="text-xs font-semibold text-zinc-200 mb-1">auth events</div>
+                  <pre className="text-[11px] leading-snug text-zinc-300 whitespace-pre-wrap break-words max-h-40 overflow-auto">
+{JSON.stringify(debugEvents, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Mobile Logo */}
           <div className="lg:hidden flex justify-center mb-8">
             <img 
