@@ -1,3 +1,4 @@
+import InstallButton from "@/components/InstallButton";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -437,6 +438,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex bg-zinc-950 text-white animate-fade-in">
+      <InstallButton />
       {/* Left Side - Feature Showcase */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-center px-12 xl:px-20 relative overflow-hidden">
         {/* Background decoration */}

@@ -1,3 +1,4 @@
+import InstallButton from "@/components/InstallButton";
 import { useState, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -136,6 +137,7 @@ const Home = () => {
       </div>
 
       <AppHeader />
+      <InstallButton />
 
       {/* Main Content */}
       <main className="container mx-auto max-w-6xl px-4 py-6 relative z-10">
