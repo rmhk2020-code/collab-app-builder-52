@@ -52,18 +52,18 @@ const getLocalMonthString = () => {
  */
 export const UserDataSync = () => {
   // This hook handles loading and auto-saving user data
-  useUserData();
+  const { isLoaded } = useUserData();
 
   const {
     setCaloriesEaten,
     setExercisesCompletedToday,
     setExercisesCompletedThisWeek,
     setExercisesCompletedThisMonth,
-    setFoodLogs,
-    foodLogs,
   } = useFitnessPlan();
 
   const checkAndPerformResets = useCallback(() => {
+    // Wait for cloud data so a reset can't be undone by a later load
+    if (!isLoaded) return;
     const currentDate = getLocalDateString();
     const currentWeek = getLocalWeekString();
     const currentMonth = getLocalMonthString();
@@ -77,13 +77,7 @@ export const UserDataSync = () => {
       console.log("[UserDataSync] Performing daily reset for", currentDate);
       setCaloriesEaten(0);
       setExercisesCompletedToday(0);
-      // Clear food logs from previous days
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      const todayLogs = foodLogs.filter(
-        (log) => new Date(log.timestamp) >= todayStart
-      );
-      setFoodLogs(todayLogs);
+      // Food/exercise logs are kept forever for the History view
       localStorage.setItem(LAST_DAILY_RESET_KEY, currentDate);
     }
 
@@ -100,7 +94,7 @@ export const UserDataSync = () => {
       setExercisesCompletedThisMonth(0);
       localStorage.setItem(LAST_MONTHLY_RESET_KEY, currentMonth);
     }
-  }, [setCaloriesEaten, setExercisesCompletedToday, setExercisesCompletedThisWeek, setExercisesCompletedThisMonth, setFoodLogs, foodLogs]);
+  }, [setCaloriesEaten, setExercisesCompletedToday, setExercisesCompletedThisWeek, setExercisesCompletedThisMonth, isLoaded]);
 
   // Check for resets on mount and when app regains focus
   useEffect(() => {

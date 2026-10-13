@@ -17,6 +17,7 @@ const Exercises = () => {
     fitnessPlan, 
     exercisesCompletedToday, 
     setExercisesCompletedToday,
+    addExerciseLog,
     exercisesCompletedThisWeek, 
     setExercisesCompletedThisWeek,
     exercisesCompletedThisMonth,
@@ -54,9 +55,8 @@ const Exercises = () => {
   };
 
   const handleQuickAdd = () => {
-    setExercisesCompletedToday(exercisesCompletedToday + 1);
-    setExercisesCompletedThisWeek(exercisesCompletedThisWeek + 1);
-    setExercisesCompletedThisMonth(exercisesCompletedThisMonth + 1);
+    // Records a history entry and bumps today/week/month counters
+    addExerciseLog({ name: t("exercises") });
   };
 
   return (

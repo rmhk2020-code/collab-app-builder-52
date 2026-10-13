@@ -28,7 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Get all users with their profiles including nutrition data
     const { data: profiles, error: profilesError } = await supabaseAdmin
       .from("user_profiles")
-      .select("user_id, weekly_exercise_goal, monthly_exercise_goal, exercises_completed_this_week, exercises_completed_this_month, exercises_completed_today, calories_eaten, daily_calorie_goal, fitness_plan");
+      .select("user_id, weekly_exercise_goal, monthly_exercise_goal, exercises_completed_this_week, exercises_completed_this_month, exercises_completed_today, calories_eaten, daily_calorie_goal, fitness_plan, updated_at");
 
     if (profilesError) {
       console.error("Error fetching profiles:", profilesError);
@@ -65,14 +65,16 @@ const handler = async (req: Request): Promise<Response> => {
         const monthlyGoal = profile.monthly_exercise_goal || 20;
         const weeklyCompleted = profile.exercises_completed_this_week || 0;
         const monthlyCompleted = profile.exercises_completed_this_month || 0;
-        const todayCompleted = profile.exercises_completed_today || 0;
+        // If the user hasn't been active in the last 24h, "today" values are stale
+        const isStaleDay = Date.now() - new Date(profile.updated_at).getTime() > 24 * 60 * 60 * 1000;
+        const todayCompleted = isStaleDay ? 0 : (profile.exercises_completed_today || 0);
         const weeklyRemaining = Math.max(0, weeklyGoal - weeklyCompleted);
         const monthlyRemaining = Math.max(0, monthlyGoal - monthlyCompleted);
         const weeklyProgress = Math.min(100, Math.round((weeklyCompleted / weeklyGoal) * 100));
         const monthlyProgress = Math.min(100, Math.round((monthlyCompleted / monthlyGoal) * 100));
 
         // Nutrition data
-        const caloriesEaten = profile.calories_eaten || 0;
+        const caloriesEaten = isStaleDay ? 0 : (profile.calories_eaten || 0);
         const dailyCalorieGoal = profile.daily_calorie_goal || 2000;
         const caloriesRemaining = Math.max(0, dailyCalorieGoal - caloriesEaten);
         const calorieProgress = Math.min(100, Math.round((caloriesEaten / dailyCalorieGoal) * 100));

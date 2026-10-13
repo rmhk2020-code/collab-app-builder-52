@@ -18,6 +18,7 @@ const Nutrition = () => {
     fitnessPlan, 
     caloriesEaten, 
     setCaloriesEaten,
+    addFoodLog,
     dailyCalorieGoal,
     setDailyCalorieGoal,
     isGuest 
@@ -45,7 +46,8 @@ const Nutrition = () => {
   const handleQuickAdd = () => {
     const amount = parseInt(quickAddAmount) || 0;
     if (amount > 0) {
-      setCaloriesEaten(caloriesEaten + amount);
+      // Records a history entry and adds the calories
+      addFoodLog({ name: "Quick add", calories: amount });
       setQuickAddAmount("");
     }
   };
