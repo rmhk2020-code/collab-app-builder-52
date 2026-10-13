@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useFitnessPlan, FitnessPlan, OnboardingAnswers, FoodLog, ExerciseLog } from "@/contexts/FitnessPlanContext";
 import { useHealthVitals } from "@/contexts/HealthVitalsContext";
@@ -36,6 +36,10 @@ export const useUserData = () => {
   const healthVitals = useHealthVitals();
   const { loadAllSettings, userProfile, fitnessPlanSettings, exerciseSettings, dietSettings, trackingSettings, notificationSettings, appPreferences, privacySettings } = useSettings();
 
+  // Saving is blocked until the cloud data has been loaded, so empty
+  // defaults can never overwrite a user's saved progress.
+  const [isLoaded, setIsLoaded] = useState(false);
+
   // Load user data from Supabase
   const loadUserData = useCallback(async () => {
     if (isGuest) return;
@@ -55,6 +59,22 @@ export const useUserData = () => {
     }
 
     if (profile) {
+      // Zero counters whose period has passed since the last save
+      const last = new Date(profile.updated_at);
+      const now = new Date();
+      const sameDay = last.toLocaleDateString("en-CA") === now.toLocaleDateString("en-CA");
+      const sameMonth = last.getFullYear() === now.getFullYear() && last.getMonth() === now.getMonth();
+      const weekStart = new Date(now);
+      weekStart.setHours(0, 0, 0, 0);
+      weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+      const sameWeek = last >= weekStart;
+      if (!sameDay) {
+        profile.exercises_completed_today = 0;
+        profile.calories_eaten = 0;
+      }
+      if (!sameWeek) profile.exercises_completed_this_week = 0;
+      if (!sameMonth) profile.exercises_completed_this_month = 0;
+
       // Load fitness plan
       if (profile.fitness_plan) {
         setFitnessPlan(profile.fitness_plan as unknown as FitnessPlan);
@@ -154,11 +174,12 @@ export const useUserData = () => {
         loadAllSettings(profile.user_settings as unknown as AllSettings);
       }
     }
+    setIsLoaded(true);
   }, [isGuest, setFitnessPlan, setAnswers, setExercisesCompletedToday, setExercisesCompletedThisWeek, setExercisesCompletedThisMonth, setWeeklyExerciseGoal, setMonthlyExerciseGoal, setCaloriesEaten, setDailyCalorieGoal, setHasCompletedOnboarding, setFoodLogs, setExerciseLogs, healthVitals, loadAllSettings]);
 
   // Save user data to Supabase
   const saveUserData = useCallback(async () => {
-    if (isGuest) return;
+    if (isGuest || !isLoaded) return;
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -232,6 +253,7 @@ export const useUserData = () => {
     }
   }, [
     isGuest,
+    isLoaded,
     fitnessPlan,
     answers,
     exercisesCompletedToday,
@@ -268,6 +290,8 @@ export const useUserData = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN") {
         loadUserData();
+      } else if (event === "SIGNED_OUT") {
+        setIsLoaded(false);
       }
     });
 
@@ -276,7 +300,7 @@ export const useUserData = () => {
 
   // Auto-save when data changes (debounced)
   useEffect(() => {
-    if (isGuest) return;
+    if (isGuest || !isLoaded) return;
 
     const timeoutId = setTimeout(() => {
       saveUserData();
@@ -337,5 +361,5 @@ export const useUserData = () => {
     };
   }, [isGuest, saveUserData]);
 
-  return { loadUserData, saveUserData };
+  return { loadUserData, saveUserData, isLoaded };
 };
