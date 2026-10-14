@@ -184,40 +184,54 @@ export const FoodVideoPlayer = ({
     if (!isOpen) stopVoice();
   }, [isOpen]);
 
-  // Generate visual content based on food
-  const videoContent = useMemo(() => {
-    if (videoData) {
-      return (
-        <div className="relative aspect-video bg-gradient-to-br from-orange-500/20 to-green-500/10 rounded-lg flex items-center justify-center">
-          <div className="text-center p-6 space-y-4">
-            <div className="w-24 h-24 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
-              <ChefHat className="h-12 w-12 text-primary animate-pulse" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground">{videoData.title || foodName}</h3>
-            <p className="text-sm text-muted-foreground max-w-md">
-              AI-generated preparation guide for {foodName}
-            </p>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {videoData.visualElements?.slice(0, 3).map((element, idx) => (
-                <span key={idx} className="px-2 py-1 bg-orange-500/10 rounded text-xs text-orange-600 dark:text-orange-400">
-                  {element}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      );
-    }
-    
-    return (
-      <div className="relative aspect-video bg-gradient-to-br from-orange-500/20 to-green-500/10 rounded-lg flex items-center justify-center">
-        <div className="text-center p-6">
-          <ChefHat className="h-16 w-16 mx-auto text-primary/50 mb-4" />
-          <p className="text-muted-foreground">Loading preparation guide...</p>
-        </div>
+  const steps = useMemo(() => {
+    if (videoData?.steps?.length) return videoData.steps;
+    if (script?.scenes?.length) return script.scenes.map((s) => s.description);
+    if (isLoading) return [];
+    return [
+      `Gather fresh ingredients for ${foodName}.`,
+      "Wash, trim and portion everything on a clean board.",
+      "Cook with a little olive oil over medium heat — avoid deep frying.",
+      "Season lightly with herbs, lemon or spices instead of extra salt or sugar.",
+      `Plate your ${foodName} and enjoy a balanced portion.`,
+    ];
+  }, [videoData, script, isLoading, foodName]);
+
+  const [step, setStep] = useState(0);
+  useEffect(() => { setStep(0); }, [steps]);
+  useEffect(() => {
+    if (!isOpen || steps.length === 0) return;
+    const id = setInterval(() => setStep((s) => (s + 1) % steps.length), 4500);
+    return () => clearInterval(id);
+  }, [isOpen, steps]);
+
+  const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`how to make healthy ${foodName} recipe`)}`;
+
+  const videoContent = steps.length === 0 ? (
+    <div className="relative aspect-video bg-gradient-to-br from-primary/20 to-accent rounded-lg flex items-center justify-center">
+      <div className="text-center p-6">
+        <Loader2 className="h-12 w-12 mx-auto text-primary animate-spin mb-4" />
+        <p className="text-muted-foreground">Preparing your cooking video...</p>
       </div>
-    );
-  }, [videoData, foodName]);
+    </div>
+  ) : (
+    <div className="relative aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-primary/25 via-accent to-secondary">
+      <div key={step} className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in-95 duration-700">
+        <ChefHat className="h-14 w-14 text-primary mb-3 animate-bounce" />
+        <div className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">
+          Step {step + 1} of {steps.length}
+        </div>
+        <p className="text-lg md:text-xl font-semibold text-foreground max-w-lg">{steps[step]}</p>
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 flex gap-1 p-3">
+        {steps.map((_, i) => (
+          <button key={i} onClick={() => setStep(i)} aria-label={`Step ${i + 1}`} className="h-1.5 flex-1 rounded-full bg-foreground/20 overflow-hidden">
+            <div className={`h-full bg-primary transition-all ${i < step ? "w-full" : i === step ? "w-full duration-[4500ms]" : "w-0"}`} />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -247,7 +261,7 @@ export const FoodVideoPlayer = ({
                     <Loader2 className="h-4 w-4 animate-spin" /> Loading instructions…
                   </span>
                 ) : (
-                  <span>Instructions</span>
+                  <a href={youtubeUrl} target="_blank" rel="noreferrer" className="text-primary underline">Watch real cooking videos on YouTube</a>
                 )}
               </div>
 
