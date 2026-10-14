@@ -9,6 +9,7 @@ import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { supabase } from "@/integrations/supabase/client";
 import AppHeader from "@/components/layout/AppHeader";
+import { useDisplayName } from "@/hooks/useDisplayName";
 
 const quotes = {
   great: [
@@ -118,6 +119,7 @@ const Home = () => {
     return () => clearInterval(interval);
   }, [selectedMood]);
 
+  const displayName = useDisplayName();
   const dailyExerciseGoal = 1;
   const dailyExerciseProgress = Math.min((exercisesCompletedToday / dailyExerciseGoal) * 100, 100);
   const weeklyExerciseProgress = Math.min((exercisesCompletedThisWeek / weeklyExerciseGoal) * 100, 100);
@@ -146,7 +148,7 @@ const Home = () => {
             {/* Welcome Message */}
             <div className="mb-6">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground animate-fade-in">
-                Welcome! <span className="inline-block animate-bounce">👋</span>
+                {displayName ? `Welcome ${displayName}!` : "Welcome!"} <span className="inline-block animate-bounce">👋</span>
               </h2>
               <p className="text-muted-foreground mt-1 animate-fade-in" style={{ animationDelay: '0.1s' }}>
                 Let's crush your fitness goals today

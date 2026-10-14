@@ -135,3 +135,4 @@ All colors MUST be HSL.
   0%, 100% { opacity: 1; box-shadow: 0 0 18px hsl(var(--gold) / 0.8); }
   50% { opacity: 0.55; box-shadow: 0 0 4px hsl(var(--gold) / 0.2); }
 }
+@keyframes scan { 0%,100% { top: 5%; } 50% { top: 95%; } }

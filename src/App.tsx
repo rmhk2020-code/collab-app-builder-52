@@ -19,6 +19,9 @@ import Nutrition from "./pages/Nutrition";
 import Settings from "./pages/Settings";
 import Health from "./pages/Health";
 import NotFound from "./pages/NotFound";
+import Community from "./pages/Community";
+import AiTools from "./pages/AiTools";
+import Integrations from "./pages/Integrations";
 import { SettingsApplier } from "@/components/SettingsApplier";
 
 const queryClient = new QueryClient();
@@ -46,6 +49,9 @@ const App = () => (
                   <Route path="/nutrition" element={<Nutrition />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/health" element={<Health />} />
+                  <Route path="/community" element={<Community />} />
+                  <Route path="/ai-tools" element={<AiTools />} />
+                  <Route path="/integrations" element={<Integrations />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

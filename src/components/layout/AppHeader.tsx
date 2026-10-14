@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Dumbbell, Apple, Target, Zap, Activity, Settings, Menu } from "lucide-react";
+import { Dumbbell, Apple, Target, Zap, Activity, Settings, Menu, Users, Sparkles, Watch } from "lucide-react";
 import healthKineticsLogo from "@/assets/health-kinetics-logo.png";
+import StreakTracker from "@/components/gamification/StreakTracker";
 import { useTranslation } from "@/i18n/TranslationContext";
 
 interface AppHeaderProps {
@@ -60,6 +61,24 @@ const AppHeader = ({ title, showTitle = true }: AppHeaderProps) => {
                   {t("vitals")}
                 </Button>
               </Link>
+              <Link to="/community" onClick={() => setSheetOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start min-h-[44px]">
+                  <Users className="h-5 w-5 mr-3" />
+                  Community
+                </Button>
+              </Link>
+              <Link to="/ai-tools" onClick={() => setSheetOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start min-h-[44px]">
+                  <Sparkles className="h-5 w-5 mr-3" />
+                  AI Tools
+                </Button>
+              </Link>
+              <Link to="/integrations" onClick={() => setSheetOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start min-h-[44px]">
+                  <Watch className="h-5 w-5 mr-3" />
+                  Devices
+                </Button>
+              </Link>
               <Link to="/home?section=about-us" onClick={() => setSheetOpen(false)}>
                 <Button variant="ghost" className="w-full justify-start min-h-[44px]">
                   <Zap className="h-5 w-5 mr-3" />
@@ -82,11 +101,14 @@ const AppHeader = ({ title, showTitle = true }: AppHeaderProps) => {
           )
         )}
 
+        <div className="flex items-center gap-1">
+        <StreakTracker />
         <Link to="/settings">
           <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
             <Settings className="h-5 w-5" />
           </Button>
         </Link>
+        </div>
       </div>
     </header>
   );
