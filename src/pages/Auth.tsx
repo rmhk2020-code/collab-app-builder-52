@@ -1,10 +1,10 @@
-import InstallButton from "@/components/InstallButton";
+import InstallButton, { triggerInstall } from "@/components/InstallButton";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Lock, User, Loader2, ArrowRight, Dumbbell, Apple, Smartphone, Watch, RefreshCw } from "lucide-react";
+import { Mail, Lock, User, Loader2, ArrowRight, Dumbbell, Apple, Smartphone, Watch, RefreshCw, Laptop } from "lucide-react";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -210,6 +210,11 @@ const Auth = () => {
         description: "Please enter a valid email address.",
         variant: "destructive",
       });
+      return;
+    }
+
+    if (isSignUp && !name.trim()) {
+      toast({ title: "Add your name", description: "Tell us what to call you.", variant: "destructive" });
       return;
     }
 
@@ -487,6 +492,13 @@ const Auth = () => {
                 <div className="text-sm font-semibold">Google Play</div>
               </div>
             </button>
+            <button type="button" onClick={triggerInstall} className="flex items-center gap-3 bg-white/10 hover:bg-white/15 border border-white/20 rounded-xl px-5 py-3 transition-all duration-300 hover:scale-105">
+              <Laptop className="w-7 h-7" />
+              <div className="text-left">
+                <div className="text-[10px] text-zinc-400">INSTALL ON</div>
+                <div className="text-sm font-semibold">Laptop</div>
+              </div>
+            </button>
           </div>
 
           {/* Feature highlights */}
@@ -626,7 +638,9 @@ const Auth = () => {
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-500" />
                 <Input
                   type="text"
-                  placeholder="Your name"
+                  placeholder="Nickname or name (e.g. Jeff)"
+                  required
+                  maxLength={40}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="pl-12 min-h-[52px] bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20"
