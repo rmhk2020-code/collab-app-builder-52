@@ -33,7 +33,10 @@ if (typeof window !== "undefined") {
   window.addEventListener("appinstalled", markInstalled);
 }
 
-export const isInstalled = () => runningAsApp() || localStorage.getItem("hk-installed") === "1";
+const isChromium = () => /Chrome|Edg|CriOS/.test(navigator.userAgent);
+// Chromium only offers install when the app is NOT installed; if no offer came, treat it as installed.
+export const isInstalled = () =>
+  runningAsApp() || localStorage.getItem("hk-installed") === "1" || (isChromium() && !isMobileDevice() && !deferred);
 
 export const isMobileDevice = () =>
   /Android|iPhone|iPad|iPod|Mobile|Silk|Kindle|Opera Mini/i.test(navigator.userAgent) ||
