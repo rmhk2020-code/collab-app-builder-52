@@ -1,0 +1,4 @@
+ALTER TABLE public.community_posts ADD COLUMN IF NOT EXISTS image_path text, ADD COLUMN IF NOT EXISTS progress jsonb;
+CREATE POLICY "community images read" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'community-images');
+CREATE POLICY "community images upload own" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'community-images' AND (storage.foldername(name))[1] = auth.uid()::text);
+CREATE POLICY "community images delete own" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'community-images' AND (storage.foldername(name))[1] = auth.uid()::text);
