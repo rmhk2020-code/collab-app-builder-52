@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 const db = supabase as any;
-type DbPost = { id: string; user_id: string; author_name: string; content: string; created_at: string };
+type DbPost = { id: string; user_id: string; author_name: string; content: string; created_at: string; image_path?: string | null; progress?: { workouts: number; kcal: number } | null };
 type DbComment = { id: string; post_id: string; author_name: string; content: string };
 const ago = (d: string) => { const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000); return m < 1 ? "now" : m < 60 ? `${m}m` : m < 1440 ? `${Math.floor(m / 60)}h` : `${Math.floor(m / 1440)}d`; };
 export const challengeDay = (joinedAt: string, days: number, now = new Date()) => Math.min(days, Math.max(0, Math.floor((now.getTime() - new Date(joinedAt).getTime()) / 86400000)));
@@ -63,6 +63,11 @@ const Community = () => {
   const [livePosts, setLivePosts] = useState<DbPost[]>([]);
   const [liveComments, setLiveComments] = useState<DbComment[]>([]);
   const [kudos, setKudos] = useState<{ post_id: string; user_id: string }[]>([]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [attachProgress, setAttachProgress] = useState(false);
+  const [posting, setPosting] = useState(false);
+  const [imgUrls, setImgUrls] = useState<Record<string, string>>({});
+  const fileRef = useRef<HTMLInputElement>(null);
   const refresh = async () => {
     const [p, c, k] = await Promise.all([
       db.from("community_posts").select("*").order("created_at", { ascending: false }).limit(50),
@@ -70,6 +75,13 @@ const Community = () => {
       db.from("community_kudos").select("*"),
     ]);
     setLivePosts(p.data ?? []); setLiveComments(c.data ?? []); setKudos(k.data ?? []);
+    const paths = (p.data ?? []).map((x: DbPost) => x.image_path).filter(Boolean) as string[];
+    if (paths.length) {
+      const { data } = await supabase.storage.from("community-images").createSignedUrls(paths, 3600);
+      const m: Record<string, string> = {};
+      data?.forEach((d) => { if (d.path && d.signedUrl) m[d.path] = d.signedUrl; });
+      setImgUrls(m);
+    }
   };
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
@@ -79,10 +91,20 @@ const Community = () => {
   }, []);
   const submitPost = async () => {
     if (!userId) return toast.error("Sign in to post.");
-    if (!newPost.trim()) return;
-    const { error } = await db.from("community_posts").insert({ user_id: userId, author_name: name, content: newPost.trim().slice(0, 1000) });
+    if (!newPost.trim() && !imageFile && !attachProgress) return;
+    setPosting(true);
+    let image_path: string | null = null;
+    if (imageFile) {
+      const path = `${userId}/${Date.now()}-${imageFile.name.replace(/[^\w.-]/g, "_")}`;
+      const up = await supabase.storage.from("community-images").upload(path, imageFile);
+      if (up.error) { setPosting(false); return toast.error("Image upload failed (max 5MB)."); }
+      image_path = path;
+    }
+    const progress = attachProgress ? { workouts: exercisesCompletedThisWeek, kcal: caloriesEaten } : null;
+    const { error } = await db.from("community_posts").insert({ user_id: userId, author_name: name, content: newPost.trim().slice(0, 1000), image_path, progress });
+    setPosting(false);
     if (error) return toast.error("Couldn't post. Try again.");
-    setNewPost(""); refresh();
+    setNewPost(""); setImageFile(null); setAttachProgress(false); refresh();
   };
   const toggleLiveKudos = async (postId: string) => {
     if (!userId) return toast.error("Sign in to give kudos.");
