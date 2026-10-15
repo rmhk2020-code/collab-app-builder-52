@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Heart, MessageCircle, Share2, Download, Trophy, Users } from "lucide-react";
+import { Heart, MessageCircle, Share2, Download, Trophy, Users, Image as ImageIcon, BarChart3 } from "lucide-react";
 import { useFitnessPlan } from "@/contexts/FitnessPlanContext";
 import { useDisplayName } from "@/hooks/useDisplayName";
 import { cn } from "@/lib/utils";
@@ -175,7 +175,24 @@ const Community = () => {
           <Card className="rounded-2xl">
             <CardContent className="p-4 space-y-2">
               <Textarea value={newPost} onChange={(e) => setNewPost(e.target.value)} maxLength={1000} placeholder="Share a workout, a meal, or a win..." />
-              <div className="flex justify-end"><Button onClick={submitPost} className="min-h-[44px]">Post</Button></div>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f && f.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB."); return; } setImageFile(f ?? null); e.target.value = ""; }} />
+              {imageFile && (
+                <div className="relative inline-block">
+                  <img src={URL.createObjectURL(imageFile)} alt="Selected" className="max-h-40 rounded-lg" />
+                  <Button size="sm" variant="secondary" className="absolute top-1 right-1 h-7 px-2" onClick={() => setImageFile(null)}>✕</Button>
+                </div>
+              )}
+              {attachProgress && (
+                <div className="text-sm bg-primary/10 rounded-lg px-3 py-2 flex justify-between items-center">
+                  <span>📊 {exercisesCompletedThisWeek} workouts this week · {caloriesEaten} kcal today</span>
+                  <button onClick={() => setAttachProgress(false)} aria-label="Remove progress">✕</button>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2 justify-end">
+                <Button variant="outline" onClick={() => fileRef.current?.click()} className="min-h-[44px]"><ImageIcon className="h-4 w-4 mr-1" /> Send Image</Button>
+                <Button variant={attachProgress ? "secondary" : "outline"} onClick={() => setAttachProgress((v) => !v)} className="min-h-[44px]"><BarChart3 className="h-4 w-4 mr-1" /> Show Recent Progress</Button>
+                <Button onClick={submitPost} disabled={posting} className="min-h-[44px]">{posting ? "Posting..." : "Post"}</Button>
+              </div>
             </CardContent>
           </Card>
           {livePosts.map((p) => {
@@ -186,7 +203,14 @@ const Community = () => {
               <Card key={p.id} className="rounded-2xl">
                 <CardContent className="p-4">
                   <div className="flex justify-between"><b>{p.author_name}</b><span className="text-xs text-muted-foreground">{ago(p.created_at)}</span></div>
-                  <p className="text-sm mt-1 whitespace-pre-wrap break-words">{p.content}</p>
+                  {p.content && <p className="text-sm mt-1 whitespace-pre-wrap break-words">{p.content}</p>}
+                  {p.image_path && imgUrls[p.image_path] && <img src={imgUrls[p.image_path]} alt="Post" loading="lazy" className="mt-2 rounded-xl max-h-96 w-full object-cover" />}
+                  {p.progress && (
+                    <div className="mt-2 grid grid-cols-2 gap-2 text-center">
+                      <div className="rounded-xl bg-primary/10 p-3"><div className="text-2xl font-bold text-primary">{p.progress.workouts}</div><div className="text-xs text-muted-foreground">workouts this week</div></div>
+                      <div className="rounded-xl bg-secondary p-3"><div className="text-2xl font-bold">{p.progress.kcal}</div><div className="text-xs text-muted-foreground">kcal today</div></div>
+                    </div>
+                  )}
                   <div className="flex gap-2 mt-3">
                     <Button variant="ghost" size="sm" onClick={() => toggleLiveKudos(p.id)} className="min-h-[40px]">
                       <Heart className={cn("h-4 w-4 mr-1", liked && "fill-destructive text-destructive")} /> {count} Kudos
