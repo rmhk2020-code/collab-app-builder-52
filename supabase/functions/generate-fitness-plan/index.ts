@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { answers, questions, feedback } = await req.json();
+    const { answers, questions, feedback, summary } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
@@ -19,7 +19,9 @@ serve(async (req) => {
     }
 
     // Check if all questions were skipped
-    const allSkipped = questions.every((_: string, i: number) => !answers[i] || answers[i] === null);
+    const allSkipped = Array.isArray(questions)
+      ? questions.every((_: string, i: number) => !answers?.[i] || answers[i] === null)
+      : !summary || summary.trim().length === 0;
     
     if (allSkipped && !feedback) {
       // Return a general fitness plan for users who skipped all questions
@@ -38,29 +40,45 @@ serve(async (req) => {
     }
 
     // Build the user context from answers
-    const userContext = questions
-      .map((q: string, i: number) => {
-        const answer = answers[i];
-        return `${q}\nAnswer: ${answer || "Skipped"}`;
-      })
-      .join("\n\n");
+    // Prefer the pre-built summary (question + actual answer pairs) sent by the client.
+    let userContext: string;
+    if (summary && typeof summary === "string" && summary.trim().length > 0) {
+      userContext = summary;
+    } else if (Array.isArray(questions)) {
+      userContext = questions
+        .map((q: string, i: number) => {
+          const answer = answers?.[i];
+          return `${q}\nAnswer: ${answer || "Skipped"}`;
+        })
+        .join("\n\n");
+    } else {
+      userContext = "No answers provided";
+    }
 
     let feedbackContext = "";
     if (feedback) {
       feedbackContext = `\n\nUser feedback on previous plan: ${feedback}\n\nPlease adjust the plan according to this feedback.`;
     }
 
-    const systemPrompt = `You are a supportive, encouraging fitness coach creating personalized fitness plans. 
+    const systemPrompt = `You are a supportive, encouraging fitness coach creating DEEPLY PERSONALIZED fitness plans.
 Your tone should be friendly, calm, and motivating - never shaming or using extreme fitness language.
 Focus on consistency, progress, and feeling good.
+
+CRITICAL: Every field of the plan MUST be uniquely tailored to THIS person's specific answers.
+- Reference their exact goal (including any follow-up details like target areas or amounts)
+- Build the weekly plan around their exact available days AND session length
+- Recommend ONLY workout styles they said they enjoy - never generic "cardio and strength"
+- Address their specific consistency barriers by name (e.g., if they lack time, give time-specific tactics)
+- Work around their specific health conditions with safe alternatives
+- Match the intensity to their exact fitness level and experience
+- Two people with different answers should get noticeably different plans - never reuse generic phrasing
 
 Important guidelines:
 - Avoid medical diagnoses or prescriptions
 - If injuries or pain are mentioned, suggest gentle alternatives and general caution
 - Keep language age-appropriate and positive
-- Make the user feel understood and supported
+- Make the user feel understood and supported - mirror their own words back to them
 - Create realistic, achievable plans
-- Include specific workout types that match their goals (e.g., "strength training", "cardio", "HIIT", "yoga", "swimming")
 
 Respond with a JSON object containing these exact fields:
 {

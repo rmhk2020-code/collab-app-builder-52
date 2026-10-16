@@ -249,8 +249,7 @@ const Onboarding = () => {
 
       const { data, error } = await supabase.functions.invoke("generate-fitness-plan", {
         body: { 
-          answers: finalAnswers, 
-          questions: questionSummary.split("\n\n").map(q => q.split("\nAnswer:")[0]),
+          summary: questionSummary,
           feedback 
         },
       });
