@@ -361,20 +361,34 @@ const Settings = () => {
   // Settings auto-save is handled by useUserData hook with 2-second debounce
   // No manual save needed
 
-  const handleResetPlan = () => {
+  const handleResetPlan = async () => {
     // Clear local storage
     localStorage.removeItem("fitnessPlan");
     localStorage.removeItem("hasCompletedOnboarding");
-    
+
     // Reset context state
     setFitnessPlan(null);
     setHasCompletedOnboarding(false);
-    
+
+    // Also clear the saved plan in the account so onboarding doesn't
+    // find the old plan and redirect straight back home
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await supabase
+          .from("user_profiles")
+          .update({ fitness_plan: null, onboarding_answers: null })
+          .eq("user_id", session.user.id);
+      }
+    } catch (error) {
+      console.error("Failed to clear saved fitness plan:", error);
+    }
+
     toast({
       title: "Fitness Plan Reset",
       description: "Redirecting to onboarding to generate a new plan...",
     });
-    
+
     // Navigate to onboarding after a short delay
     setTimeout(() => {
       navigate("/onboarding");
