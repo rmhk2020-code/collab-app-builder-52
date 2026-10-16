@@ -38,12 +38,20 @@ serve(async (req) => {
     }
 
     // Build the user context from answers
-    const userContext = questions
-      .map((q: string, i: number) => {
-        const answer = answers[i];
-        return `${q}\nAnswer: ${answer || "Skipped"}`;
-      })
-      .join("\n\n");
+    // Prefer the pre-built summary (question + actual answer pairs) sent by the client.
+    let userContext: string;
+    if (summary && typeof summary === "string" && summary.trim().length > 0) {
+      userContext = summary;
+    } else if (Array.isArray(questions)) {
+      userContext = questions
+        .map((q: string, i: number) => {
+          const answer = answers?.[i];
+          return `${q}\nAnswer: ${answer || "Skipped"}`;
+        })
+        .join("\n\n");
+    } else {
+      userContext = "No answers provided";
+    }
 
     let feedbackContext = "";
     if (feedback) {
